@@ -46,6 +46,8 @@ class Module
                     'Truncate'    => Helper\Truncate::class,
                     'urlFormat'   => Helper\UrlFormat::class,
                     'UrlFormat'   => Helper\UrlFormat::class,
+                    'video'   	  => Helper\Video::class,
+                    'Video'       => Helper\Video::class,
                 ],
                 'factories' => [
                     Helper\Acl::class         => Helper\Factory\AclFactory::class,
@@ -63,6 +65,7 @@ class Module
                     Helper\Srcset::class      => InvokableFactory::class,
                     Helper\Truncate::class    => InvokableFactory::class,
                     Helper\UrlFormat::class   => InvokableFactory::class,
+                    Helper\Video::class       => InvokableFactory::class,
                 ],
             ],
             'view_manager' => [
