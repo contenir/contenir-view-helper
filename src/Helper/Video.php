@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\View\Helper;
+namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHtmlElement;
 
