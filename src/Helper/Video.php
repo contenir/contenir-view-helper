@@ -7,7 +7,7 @@ use Laminas\View\Helper\AbstractHtmlElement;
 class Video extends AbstractHtmlElement
 {
     protected $options = [
-        'videoClass' => 'video',
+        'videoClass'        => 'video',
         'videoWrapperClass' => ''
     ];
 
@@ -18,7 +18,7 @@ class Video extends AbstractHtmlElement
         $options = array_merge($this->options, $options);
 
         $mediaInfo = $this->parsePath($path);
-        $provider = $mediaInfo['provider'];
+        $provider  = $mediaInfo['provider'];
 
         $videoClass = $options['videoClass'];
 
@@ -32,7 +32,7 @@ class Video extends AbstractHtmlElement
     muted
     autoplay
     loop>
-    <source src="https://player.vimeo.com/%s"></source>
+    <source src="{$path}"></source>
 </video>
 ENDHTML;
                     if (! empty($options['videoWrapperClass'])) {
@@ -117,8 +117,8 @@ ENDHTML;
     protected function parsePath($path)
     {
         $media = [
-        'provider' => null,
-        'id' => null
+            'provider' => null,
+            'id'       => null
         ];
 
         if (
@@ -130,13 +130,13 @@ ENDHTML;
             )
         ) {
             $media['provider'] = $match[2][0];
-            $media['path'] = $match[3][0];
+            $media['path']     = $match[3][0];
             return $media;
         }
 
         if (preg_match('/^(\w+):(.*)$/', $path, $match, PREG_OFFSET_CAPTURE)) {
             $media['provider'] = $match[1][0];
-            $media['path'] = $match[2][0];
+            $media['path']     = $match[2][0];
             return $media;
         }
 
