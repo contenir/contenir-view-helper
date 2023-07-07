@@ -15,21 +15,22 @@ class FormGroup extends AbstractHtmlElement
             'class' => 'form__group'
         ]
     ) {
-        $groupClass = $groupAttributes['class'] ?? null;
+        $groupAttributesString = $this->view->HtmlAttributes($groupAttributes);
+
         if (count($element->getMessages())) {
-            $groupClass .= ' error';
+            $groupAttributes['class'] .= ' error';
         }
 
         if ($element->getAttribute('group_class')) {
-            $groupClass .= ' ' . $element->getAttribute('group_class');
+            $groupAttributes['class'] .= ' ' . $element->getAttribute('group_class');
             $element->removeAttribute('group_class');
         }
 
         if ($element->getAttribute('data-field-dependancy')) {
-            $groupClass .= ' form__group--dependancy';
+            $groupAttributes['class'] .= ' form__group--dependancy';
         }
 
-        $reflect = new ReflectionClass($element);
+        $reflect     = new ReflectionClass($element);
         $elementType = strtolower($reflect->getShortName());
 
         if ($elementType == 'collection') {
@@ -98,17 +99,17 @@ class FormGroup extends AbstractHtmlElement
                 $attributes['name'] = $element->getName() . (($elementType == 'multicheckbox') ? '[]' : '');
                 $attributes['type'] = ($elementType == 'radio') ? 'radio' : 'checkbox';
                 $selectedOptions    = (array) $element->getValue();
-                $count          = 0;
+                $count              = 0;
 
                 foreach ($element->getValueOptions() as $key => $optionSpec) {
-                    $value           = '';
-                    $label           = '';
-                    $inputAttributes = $attributes;
+                    $value                = '';
+                    $label                = '';
+                    $inputAttributes      = $attributes;
                     $multiLabelAttributes = [];
-                    $selected        = isset($inputAttributes['selected'])
-                        && $inputAttributes['type'] !== 'radio'
-                        && $inputAttributes['selected'];
-                    $disabled        = isset($inputAttributes['disabled']) && $inputAttributes['disabled'];
+                    $selected             = isset($inputAttributes['selected'])
+                                                                    && $inputAttributes['type'] !== 'radio'
+                                                                    && $inputAttributes['selected'];
+                    $disabled = isset($inputAttributes['disabled']) && $inputAttributes['disabled'];
 
                     if (is_scalar($optionSpec)) {
                         $optionSpec = [
@@ -142,8 +143,8 @@ class FormGroup extends AbstractHtmlElement
                         $selected = true;
                     }
 
-                    $inputAttributes['id']       = $this->getNormalisedId($element->getAttribute('id') . '-' . $value);
-                    $inputAttributes['value']    = $value;
+                    $inputAttributes['id']    = $this->getNormalisedId($element->getAttribute('id') . '-' . $value);
+                    $inputAttributes['value'] = $value;
 
                     if ($selected) {
                         $inputAttributes['checked'] = $selected;
@@ -169,7 +170,7 @@ class FormGroup extends AbstractHtmlElement
                     $html .= '<div class="form__control--' . $attributes['type'] . '">' . $input . $label . '</div>';
                 };
 
-                $html = '<div class="' . $groupClass . '">' .
+                $html = '<div ' . $groupAttributesString . '>' .
                         $labelHtml .
                         '<div class="form__group--options">' . $html . '</div>' .
                         $this->view->formElementErrors($element, [
@@ -180,7 +181,7 @@ class FormGroup extends AbstractHtmlElement
                 break;
 
             case 'file':
-                $html = '<div class="' . $groupClass . '">' .
+                $html = '<div ' . $groupAttributesString . '>' .
                         $labelHtml .
                         '<span class="form__control--file" data-caption="">' .
                         $this->view->formElement($element) .
@@ -193,7 +194,7 @@ class FormGroup extends AbstractHtmlElement
                 break;
 
             case 'checkbox':
-                $html = '<div class="' . $groupClass . '">' .
+                $html = '<div ' . $groupAttributesString . '>' .
                         '<div class="form__control--checkbox">' .
                         $this->view->formElement($element) .
                         $labelHtml .
@@ -218,7 +219,7 @@ class FormGroup extends AbstractHtmlElement
                 break;
 
             default:
-                $html = '<div class="' . $groupClass . '">' .
+                $html = '<div ' . $groupAttributesString . '>' .
                         $labelHtml .
                         $this->view->formElement($element) .
                         $this->view->formElementErrors($element, [
