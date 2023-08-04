@@ -11,7 +11,7 @@ class Video extends AbstractHtmlElement
         'videoWrapperClass' => ''
     ];
 
-    public function __invoke($path, array $options = [])
+    public function __invoke($path, array $options = [], $controls = false)
     {
         $html = '';
 
@@ -25,13 +25,12 @@ class Video extends AbstractHtmlElement
         switch ($provider) {
             case 'vimeo':
                 if (strpos($path, 'external') !== false) {
+                	$videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
                     $template = <<<ENDHTML
 <video
     class="%s"
     playsinline
-    muted
-    autoplay
-    loop>
+    $videoAttributes>
     <source src="{$path}"></source>
 </video>
 ENDHTML;
@@ -93,13 +92,12 @@ ENDHTML;
                 break;
 
             default:
+				$videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
                 $template = <<<ENDHTML
 <video
     class="%s"
     playsinline
-    muted
-    autoplay
-    loop>
+    $videoAttributes>
     <source src="%s"></source>
 </video>
 ENDHTML;
