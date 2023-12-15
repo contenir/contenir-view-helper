@@ -57,7 +57,7 @@ class Module
                     Helper\FileSize::class    => InvokableFactory::class,
                     Helper\FileType::class    => InvokableFactory::class,
                     Helper\FormGroup::class   => InvokableFactory::class,
-                    Helper\Icon::class        => InvokableFactory::class,
+                    Helper\Icon::class        => Helper\Factory\IconFactory::class,
                     Helper\Image::class       => Helper\Factory\ImageFactory::class,
                     Helper\RichContent::class => InvokableFactory::class,
                     Helper\Settings::class    => Helper\Factory\SettingsFactory::class,
