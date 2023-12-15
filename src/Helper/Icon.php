@@ -8,12 +8,12 @@ use Traversable;
 class Icon extends AbstractHelper
 {
     protected $options = [
-        'class' => 'icon',
+        'class'     => 'icon',
         'base_path' => './public/asset/icon',
         'extension' => 'svg'
     ];
 
-    public function __invoke($iconName, Array $options = [])
+    public function __invoke($iconName, array $options = [])
     {
         $options = array_merge($this->options, $options);
 
@@ -31,5 +31,35 @@ class Icon extends AbstractHelper
             $options['class'],
             $iconData
         );
+    }
+
+    public function getClass()
+    {
+        return $this->options['class'];
+    }
+
+    public function setClass($className)
+    {
+        $this->options['class'] = $className;
+    }
+
+    public function getBasePath()
+    {
+        return $this->options['base_path'];
+    }
+
+    public function setBasePath($basePath)
+    {
+        $this->options['base_path'] = $basePath;
+    }
+
+    public function getExtension()
+    {
+        return $this->options['extension'];
+    }
+
+    public function setExtension($extension)
+    {
+        $this->options['extension'] = $extension;
     }
 }
