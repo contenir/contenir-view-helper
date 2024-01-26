@@ -15,8 +15,6 @@ class FormGroup extends AbstractHtmlElement
             'class' => 'form__group'
         ]
     ) {
-        $groupAttributesString = $this->view->HtmlAttributes($groupAttributes);
-
         if (count($element->getMessages())) {
             $groupAttributes['class'] .= ' error';
         }
@@ -30,11 +28,18 @@ class FormGroup extends AbstractHtmlElement
             $groupAttributes['class'] .= ' form__group--dependancy';
         }
 
+        $groupAttributesString = $this->view->HtmlAttributes($groupAttributes);
+
         $reflect     = new ReflectionClass($element);
         $elementType = strtolower($reflect->getShortName());
 
         if ($elementType == 'collection') {
-            $html = $this->view->formCollection()->setElementHelper($this->view->plugin(FormGroup::class))->render($element);
+            $html = $this
+                ->view
+                ->formCollection()
+                ->setLabelWrapper('<legend class="form__label">%s</legend>')
+                ->setElementHelper($this->view->plugin(FormGroup::class))
+                ->render($element);
             return $html;
         }
 

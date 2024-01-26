@@ -24,9 +24,11 @@ class RichContent extends AbstractHelper
         $template = array_merge($this->template, $template);
         $html = '';
 
-        $sections = preg_split('/<(\w+)([^>]*)>([^<]*)__SECTION__([^<]*)<\/\1>/msi', $content, -1, PREG_SPLIT_NO_EMPTY);
-        foreach ($sections as $section) {
-            $html .= $this->formatSection($section, $template);
+        if ($content !== null) {
+            $sections = preg_split('/<(\w+)([^>]*)>([^<]*)__SECTION__([^<]*)<\/\1>/msi', $content, -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($sections as $section) {
+                $html .= $this->formatSection($section, $template);
+            }
         }
 
         return $html;
