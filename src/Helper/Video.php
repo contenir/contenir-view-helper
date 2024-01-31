@@ -25,8 +25,8 @@ class Video extends AbstractHtmlElement
         switch ($provider) {
             case 'vimeo':
                 if (strpos($path, 'external') !== false) {
-                	$videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
-                    $template = <<<ENDHTML
+                    $videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
+                    $template        = <<<ENDHTML
 <video
     class="%s"
     playsinline
@@ -92,8 +92,8 @@ ENDHTML;
                 break;
 
             default:
-				$videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
-                $template = <<<ENDHTML
+                $videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
+                $template        = <<<ENDHTML
 <video
     class="%s"
     playsinline
@@ -122,7 +122,7 @@ ENDHTML;
         if (
             preg_match(
                 '/(http:\/\/)?(?:www.)?(vimeo|youtube).com\/(?:watch\?v=|video\/)?(.*?)(?:\z|&)/',
-                $path,
+                (string)$path,
                 $match,
                 PREG_OFFSET_CAPTURE
             )

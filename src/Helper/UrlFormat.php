@@ -16,7 +16,7 @@ class UrlFormat extends AbstractHelper
             $format = $this->_format;
         }
 
-        if (! preg_match('/^[a-z]+:\/\//', $url)) {
+        if (! preg_match('/^[a-z]+:\/\//', (string)$url)) {
             if ($url[0] === '/') {
                 $url = $this->view->ServerUrl() . $url;
             } else {
@@ -25,7 +25,7 @@ class UrlFormat extends AbstractHelper
         }
 
         try {
-            $uri = UriFactory::factory($url);
+            $uri          = UriFactory::factory($url);
             $formattedUrl = preg_replace_callback(
                 '/%(\w+)%/',
                 function ($matches) use ($uri) {

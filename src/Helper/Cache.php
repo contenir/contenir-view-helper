@@ -22,9 +22,9 @@ class Cache extends AbstractHelper
     public function __invoke($script = null, $key = null)
     {
         if ($script !== null && $key !== null) {
-            $key = $this->getSafeKey($key);
+            $key     = $this->getSafeKey((string)$key);
             $storage = $this->cache->getStorage();
-            $output = $storage->getItem($key, $success);
+            $output  = $storage->getItem($key, $success);
             if (! $success) {
                 $output = $this->getView()->render($script);
                 $storage->setItem($key, $output);

@@ -7,7 +7,7 @@ use Laminas\View\Helper\AbstractHelper;
 class Truncate extends AbstractHelper
 {
     public function __invoke(
-        $string,
+        $value,
         $length = 125,
         $strip = false,
         $etc = '...',
@@ -20,25 +20,25 @@ class Truncate extends AbstractHelper
             return $html;
         }
 
-        $string = preg_replace('/<h(\d+)[^>]*>(.*?)\.?<\/h\\1>/msi', '\\2. ', $string);
-        $string = preg_replace('/<br[^>]*>/msi', "\n", $string);
-        $string = preg_replace('/[\r\n]+/msi', ' ', $string);
+        $value = preg_replace('/<h(\d+)[^>]*>(.*?)\.?<\/h\\1>/msi', '\\2. ', (string)$value);
+        $value = preg_replace('/<br[^>]*>/msi', "\n", $value);
+        $value = preg_replace('/[\r\n]+/msi', ' ', $value);
         if ($strip) {
-            $string = strip_tags($string);
+            $value = strip_tags($value);
         }
 
-        if (strlen($string) > $length) {
+        if (strlen($value) > $length) {
             $length -= strlen($etc);
             if (! $break_words && ! $middle) {
-                $string = preg_replace('/\s+?(\S+)?$/', '', substr($string, 0, $length + 1));
+                $value = preg_replace('/\s+?(\S+)?$/', '', substr($value, 0, $length + 1));
             }
             if (! $middle) {
-                $html = substr($string, 0, $length) . $etc;
+                $html = substr($value, 0, $length) . $etc;
             } else {
-                $html = substr($string, 0, $length / 2) . $etc . substr($string, -$length / 2);
+                $html = substr($value, 0, $length / 2) . $etc . substr($value, -$length / 2);
             }
         } else {
-            $html = $string;
+            $html = $value;
         }
 
         return $html;

@@ -11,14 +11,14 @@ class Image extends AbstractHtmlElement
 
     public function __construct($options)
     {
-        $this->host = $options['host'] ?? null;
+        $this->host   = $options['host']   ?? null;
         $this->scheme = $options['method'] ?? 'https';
     }
 
     public function __invoke($path, array $attributes = [], array $pictureAttributes = [])
     {
-        if (! preg_match('/^http(s)?:/', $path)) {
-            $info = parse_url($path);
+        if (! preg_match('/^http(s)?:/', (string)$path)) {
+            $info   = parse_url($path);
             $scheme = ($this->host) ? $this->scheme . '://' : null;
 
             $fullPath = join('', [
@@ -36,26 +36,26 @@ class Image extends AbstractHtmlElement
                 unset($attributes['resizeWidth']);
             }
 
-            $src = $fullPath . '?width=20&amp;auto_optimize=high';
+            $src     = $fullPath . '?width=20&amp;auto_optimize=high';
             $dataSrc = $fullPath . '?' . http_build_query($resizeParams);
         } else {
-            $src = $path;
+            $src     = $path;
             $dataSrc = $path;
         }
 
 
         $imgAttributes = array_merge([
-            'src' => $src,
+            'src'      => $src,
             'data-src' => $dataSrc,
-            'class' => 'img',
-            'alt' => ''
+            'class'    => 'img',
+            'alt'      => ''
         ], $attributes);
 
         $pictureAttributes = array_merge([
             'class' => 'picture'
         ], $pictureAttributes);
 
-        $imgHtml = sprintf('<img%s data-lazyload%s', $this->htmlAttribs($imgAttributes), $this->getClosingBracket());
+        $imgHtml     = sprintf('<img%s data-lazyload%s', $this->htmlAttribs($imgAttributes), $this->getClosingBracket());
         $pictureHtml = sprintf('<picture %s>%s</picture>', $this->htmlAttribs($pictureAttributes), $imgHtml);
 
         return $pictureHtml;
