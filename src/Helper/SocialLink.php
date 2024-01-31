@@ -74,7 +74,7 @@ class SocialLink extends AbstractHelper
         }
 
         if ($options['icon']) {
-            $content = file_get_contents('./public/asset/icon/icon-' . $socialId . '.svg');
+            $content = file_get_contents("./public/asset/icon/icon-{$socialId}.svg");
         } else {
             $content = $social['title'];
         }
