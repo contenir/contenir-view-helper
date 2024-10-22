@@ -3,6 +3,9 @@
 namespace Contenir\View\Helper;
 
 use Laminas\Form\Element;
+use Laminas\Form\View\Helper\FormCollection;
+use Laminas\Form\View\Helper\FormElement;
+use Laminas\Form\View\Helper\FormElementErrors;
 use Laminas\View\Helper\AbstractHtmlElement;
 use ReflectionClass;
 
@@ -18,7 +21,7 @@ class FormGroup extends AbstractHtmlElement
         array $groupAttributes = [
             'class' => 'form__group'
         ]
-    ) {
+    ): string {
         $view = $this->getPHPView();
 
         if (count($element->getMessages())) {
@@ -40,8 +43,8 @@ class FormGroup extends AbstractHtmlElement
         $elementType = strtolower($reflect->getShortName());
 
         if ($elementType == 'collection') {
-            return $view
-                ->formCollection()
+            return $this
+                ->getFormCollection()
                 ->setLabelWrapper('<legend class="form__label">%s</legend>')
                 ->setElementHelper($view->plugin(FormGroup::class))
                 ->render($element);
@@ -82,7 +85,7 @@ class FormGroup extends AbstractHtmlElement
 
         $element->setLabelAttributes($labelAttributes);
 
-        $labelHtml = ($element->getLabel()) ? nl2br($view->formLabel($element)) : null;
+        $labelHtml = ($element->getLabel()) ? nl2br($element->getLabel()) : null;
 
         $descriptionHtml = '';
         if ($element->getOption('description')) {
@@ -103,8 +106,9 @@ class FormGroup extends AbstractHtmlElement
                 $attributes['name'] = $element->getName() . (($elementType == 'multicheckbox') ? '[]' : '');
                 $attributes['type'] = ($elementType == 'radio') ? 'radio' : 'checkbox';
                 $selectedOptions    = (array)$element->getValue();
+                $valueOptions       = (is_callable([$element, 'getValueOptions'])) ? $element->getValueOptions() : [];
 
-                foreach ($element->getValueOptions() as $key => $optionSpec) {
+                foreach ($valueOptions as $key => $optionSpec) {
                     $value                = '';
                     $label                = '';
                     $inputAttributes      = $attributes;
@@ -157,10 +161,9 @@ class FormGroup extends AbstractHtmlElement
 
                     $multiLabelAttributes['for'] = $inputAttributes['id'];
 
-                    $input = sprintf(
-                        '<input %s>',
-                        $this->htmlAttribs($inputAttributes),
-                    );
+                    $tag        = 'input';
+                    $attributes = $this->htmlAttribs($inputAttributes);
+                    $input      = '<' . $tag . $attributes . $this->getClosingBracket();
 
                     $label = sprintf(
                         '<label%s>%s</label>',
@@ -168,13 +171,13 @@ class FormGroup extends AbstractHtmlElement
                         $label
                     );
 
-                    $html .= '<div class="form__control--' . $attributes['type'] . '">' . $input . $label . '</div>';
+                    $html .= '<div class="form__control--' . $inputAttributes['type'] . '">' . $input . $label . '</div>';
                 }
 
                 $html = '<div ' . $groupAttributesString . '>' .
                     $labelHtml .
                     '<div class="form__group--options">' . $html . '</div>' .
-                    $view->formElementErrors($element, [
+                    $this->getFormElementErrors()->render($element, [
                         'class' => 'form__errors'
                     ]) .
                     $descriptionHtml .
@@ -185,9 +188,9 @@ class FormGroup extends AbstractHtmlElement
                 $html = '<div ' . $groupAttributesString . '>' .
                     $labelHtml .
                     '<span class="form__control--file" data-caption="">' .
-                    $view->formElement($element) .
+                    $this->getFormElement()->render($element) .
                     '</span>' .
-                    $view->formElementErrors($element, [
+                    $this->getFormElementErrors()->render($element, [
                         'class' => 'form__errors'
                     ]) .
                     $descriptionHtml .
@@ -197,9 +200,9 @@ class FormGroup extends AbstractHtmlElement
             case 'checkbox':
                 $html = '<div ' . $groupAttributesString . '>' .
                     '<div class="form__control--checkbox">' .
-                    $view->formElement($element) .
+                    $this->getFormElement()->render($element) .
                     $labelHtml .
-                    $view->formElementErrors($element, [
+                    $this->getFormElementErrors()->render($element, [
                         'class' => 'form__errors'
                     ]) .
                     $descriptionHtml .
@@ -208,13 +211,13 @@ class FormGroup extends AbstractHtmlElement
                 break;
 
             case 'hidden':
-                $html = $view->formElement($element);
+                $html = $this->getFormElement()->render($element);
                 break;
 
             case '':
                 $html = $labelHtml .
-                    $view->formElement($element) .
-                    $view->formElementErrors($element, [
+                    $this->getFormElement()->render($element) .
+                    $this->getFormElementErrors()->render($element, [
                         'class' => 'form__errors'
                     ]);
                 break;
@@ -222,8 +225,8 @@ class FormGroup extends AbstractHtmlElement
             default:
                 $html = '<div ' . $groupAttributesString . '>' .
                     $labelHtml .
-                    $view->formElement($element) .
-                    $view->formElementErrors($element, [
+                    $this->getFormElement()->render($element) .
+                    $this->getFormElementErrors()->render($element, [
                         'class' => 'form__errors'
                     ]) .
                     $descriptionHtml .
@@ -234,10 +237,34 @@ class FormGroup extends AbstractHtmlElement
         return $html;
     }
 
-    public function getNormalisedId($id): array|string|null
+    protected function getFormCollection(): FormCollection
+    {
+        $helper = $this->getPHPView()->plugin(FormCollection::class);
+        assert($helper instanceof FormCollection);
+
+        return $helper;
+    }
+
+    protected function getFormElement(): FormElement
+    {
+        $helper = $this->getPHPView()->plugin(FormElement::class);
+        assert($helper instanceof FormElement);
+
+        return $helper;
+    }
+
+    protected function getFormElementErrors(): FormElementErrors
+    {
+        $helper = $this->getPHPView()->plugin(FormElementErrors::class);
+        assert($helper instanceof FormElementErrors);
+
+        return $helper;
+    }
+
+    protected function getNormalisedId($id): array|string|null
     {
         $id = preg_replace('/[^a-zA-Z0-9_\-]/', '-', strtolower($id));
 
-        return preg_replace('/[\-]{2,}/', '-', $id);
+        return preg_replace('/-{2,}/', '-', $id);
     }
 }
