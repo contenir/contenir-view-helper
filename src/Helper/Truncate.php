@@ -13,7 +13,7 @@ class Truncate extends AbstractHelper
         $etc = '...',
         $break_words = false,
         $middle = false
-    ) {
+    ): array|string|null {
         $html = '';
 
         if ($length == 0) {
@@ -21,8 +21,8 @@ class Truncate extends AbstractHelper
         }
 
         $value = preg_replace('/<h(\d+)[^>]*>(.*?)\.?<\/h\\1>/msi', '\\2. ', (string)$value);
-        $value = preg_replace('/<br[^>]*>/msi', "\n", $value);
-        $value = preg_replace('/[\r\n]+/msi', ' ', $value);
+        $value = preg_replace('/<br[^>]*>/mi', "\n", $value);
+        $value = preg_replace('/[\r\n]+/mi', ' ', $value);
         if ($strip) {
             $value = strip_tags($value);
         }

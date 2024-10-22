@@ -8,9 +8,9 @@ use Exception;
 
 class DateFormat extends AbstractHelper
 {
-    protected $format = 'd M Y';
+    protected string $format = 'd M Y';
 
-    public function __invoke($datetime = null, $format = null)
+    public function __invoke($datetime = null, $format = null): ?string
     {
         if ($format === null) {
             $format = $this->format;
@@ -18,7 +18,7 @@ class DateFormat extends AbstractHelper
 
         try {
             $date = (new DateTime($datetime))->format($format);
-        } catch (Exception $e) {
+        } catch (Exception) {
             $date = null;
         }
 

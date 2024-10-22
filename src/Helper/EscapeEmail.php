@@ -2,12 +2,11 @@
 
 namespace Contenir\View\Helper;
 
-use Application\Entity\EntryEntity;
 use Laminas\View\Helper\AbstractHelper;
 
 class EscapeEmail extends AbstractHelper
 {
-    public function __invoke($email, $mailto = false)
+    public function __invoke($email, $mailto = false): string
     {
         $address = '';
         $escape = '<!-- . -->&#x%s;';

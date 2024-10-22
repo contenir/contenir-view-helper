@@ -6,7 +6,9 @@ use Laminas\View\Helper\AbstractHelper;
 
 class RichContent extends AbstractHelper
 {
-    protected $template = [
+    use PHPViewTrait;
+
+    protected array $template = [
         'outerTag'    => 'section',
         'outerClass'  => 'grid grid--content',
         'innerTag'    => '',
@@ -20,13 +22,13 @@ class RichContent extends AbstractHelper
         ]
     ];
 
-    public function __invoke($content, array $template = [])
+    public function __invoke($content, array $template = []): string
     {
         $template = array_merge($this->template, $template);
         $html     = '';
 
         if ($content !== null) {
-            $sections = preg_split('/<(\w+)([^>]*)>([^<]*)__SECTION__([^<]*)<\/\1>/msi',
+            $sections = preg_split('/<(\w+)([^>]*)>([^<]*)__SECTION__([^<]*)<\/\1>/mi',
                 (string)$content,
                 -1,
                 PREG_SPLIT_NO_EMPTY);
@@ -38,12 +40,13 @@ class RichContent extends AbstractHelper
         return $html;
     }
 
-    protected function formatSection($section, $template)
+    protected function formatSection($section, $template): string
     {
         extract($template);
+        $view    = $this->getPHPView();
 
         $html      = '';
-        $columns   = preg_split('/<(\w+)([^>]*)>([^<]*)__COL__([^<]*)<\/\1>/msi',
+        $columns   = preg_split('/<(\w+)([^>]*)>([^<]*)__COL__([^<]*)<\/\1>/mi',
             (string)$section,
             -1,
             PREG_SPLIT_NO_EMPTY);
@@ -53,24 +56,29 @@ class RichContent extends AbstractHelper
             $columnClass = $columnClass[$columnCnt] ?? $columnClass['default'] ?? null;
 
             foreach ($columns as $column) {
-                $tagClass = ($columnClass) ? sprintf(' class="%s"', $this->view->EscapeHtml($columnClass)) : '';
+                $tagClass = ($columnClass) ? sprintf(' class="%s"', $view->EscapeHtml($columnClass)) : '';
                 $tagStart = ($columnTag) ? sprintf('<%s%s>', $columnTag, $tagClass) : '';
                 $tagEnd   = ($columnTag) ? sprintf('</%s>', $columnTag) : '';
                 $html     .= sprintf('%s%s%s', $tagStart, trim($column), $tagEnd);
             }
-            $tagClass = ($innerClass) ? sprintf(' class="%s"', $this->view->EscapeHtml($innerClass)) : '';
-            $tagStart = ($innerTag) ? sprintf('<%s%s>', $innerTag, $tagClass) : '';
-            $tagEnd   = ($innerTag) ? sprintf('</%s>', $innerTag) : '';
-            $html     = sprintf('%s%s%s', $tagStart, trim($html), $tagEnd);
 
-            $tagClass = ($outerClass) ? sprintf(' class="%s"', $this->view->EscapeHtml($outerClass)) : '';
-            $tagStart = ($outerTag) ? sprintf('<%s%s>', $outerTag, $tagClass) : '';
-            $tagEnd   = ($outerTag) ? sprintf('</%s>', $outerTag) : '';
-            $html     = sprintf('%s%s%s', $tagStart, trim($html), $tagEnd);
+            $html = $this->formatWrapper($html, $innerClass, $innerTag);
+            $html = $this->formatWrapper($html, $outerClass, $outerTag);
         } else {
-            $html     .= join($columns);
+            $html .= join($columns);
         }
 
         return $html;
+    }
+
+    protected function formatWrapper($html, $class, $tag): string
+    {
+        $view    = $this->getPHPView();
+
+        $tagClass = ($class) ? sprintf(' class="%s"', $view->EscapeHtml($class)) : '';
+        $tagStart = ($tag) ? sprintf('<%s%s>', $tag, $tagClass) : '';
+        $tagEnd   = ($tag) ? sprintf('</%s>', $tag) : '';
+
+        return sprintf('%s%s%s', $tagStart, trim($html), $tagEnd);
     }
 }

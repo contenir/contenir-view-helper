@@ -11,7 +11,7 @@ class Module
      *
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return [
             'view_helpers' => [

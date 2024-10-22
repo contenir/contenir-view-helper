@@ -2,23 +2,27 @@
 
 namespace Contenir\View\Helper;
 
+use Laminas\Uri\Exception\InvalidArgumentException;
 use Laminas\View\Helper\AbstractHelper;
 use Laminas\Uri\UriFactory;
-use Laminas\Uri\Uri\Exception\InvalidArgumentException;
 
 class UrlFormat extends AbstractHelper
 {
-    protected $_format = '%scheme%%host%%path%';
+    use PHPViewTrait;
 
-    public function __invoke($url = null, $format = null)
+    protected string $_format = '%scheme%%host%%path%';
+
+    public function __invoke($url = null, $format = null): array|string|null
     {
         if ($format === null) {
             $format = $this->_format;
         }
 
+        $view = $this->getPHPView();
+
         if (! preg_match('/^[a-z]+:\/\//', (string)$url)) {
             if ($url[0] === '/') {
-                $url = $this->view->ServerUrl() . $url;
+                $url = $view->ServerUrl() . $url;
             } else {
                 $url = 'http://' . $url;
             }
@@ -76,7 +80,7 @@ class UrlFormat extends AbstractHelper
                 },
                 $format
             );
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $formattedUrl = '';
         }
 

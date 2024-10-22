@@ -6,16 +6,17 @@ use Laminas\View\Helper\AbstractHtmlElement;
 
 class Video extends AbstractHtmlElement
 {
-    protected $options = [
+    use PHPViewTrait;
+
+    protected array $options = [
         'videoClass'        => 'video',
         'videoWrapperClass' => ''
     ];
 
-    public function __invoke($path, array $options = [], $controls = false)
+    public function __invoke($path, array $options = [], $controls = false): string
     {
-        $html = '';
-
         $options = array_merge($this->options, $options);
+        $view = $this->getPHPView();
 
         $mediaInfo = $this->parsePath($path);
         $provider  = $mediaInfo['provider'];
@@ -24,29 +25,16 @@ class Video extends AbstractHtmlElement
 
         switch ($provider) {
             case 'vimeo':
-                if (strpos($path, 'external') !== false) {
+                if (str_contains($path, 'external')) {
                     $videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
                     $template        = <<<ENDHTML
 <video
     class="%s"
     playsinline
     $videoAttributes>
-    <source src="{$path}"></source>
+    <source src="$path">
 </video>
 ENDHTML;
-                    if (! empty($options['videoWrapperClass'])) {
-                        $html = sprintf(
-                            '<div class="%">%s</div>',
-                            $options['videoWrapperClass'],
-                            $html
-                        );
-                    }
-
-                    $html = sprintf(
-                        $template,
-                        $this->view->EscapeHtmlAttr($videoClass),
-                        $this->view->EscapeHtmlAttr($mediaInfo['path'])
-                    );
                 } else {
                     $template = <<<ENDHTML
 <iframe
@@ -56,8 +44,7 @@ ENDHTML;
     data-vimeo-byline="false"
     data-vimeo-title="false"
     data-vimeo="1"
-    allowfullscreen
-    frameborder="0">
+    allowfullscreen>
 </iframe>
 ENDHTML;
                     if (! empty($options['videoWrapperClass'])) {
@@ -68,51 +55,31 @@ ENDHTML;
                         );
                     }
 
-                    $html = sprintf(
-                        $template,
-                        $this->view->EscapeHtmlAttr($videoClass),
-                        $this->view->EscapeHtmlAttr($mediaInfo['path'])
-                    );
                 }
                 break;
 
             case 'youtube':
                 $template = <<<ENDHTML
-<iframe
-    class="%s"
-    src="https://www.youtube.com/embed/%s?fs=1&amp;showinfo=0"
-    frameborder="0">
-</iframe>
+<iframe class="%s" src="https://www.youtube.com/embed/%s?fs=1&amp;showinfo=0"></iframe>
 ENDHTML;
-                $html = sprintf(
-                    $template,
-                    $this->view->EscapeHtmlAttr($videoClass),
-                    $this->view->EscapeHtmlAttr($mediaInfo['path'])
-                );
                 break;
 
             default:
                 $videoAttributes = ($controls) ? ' controls' : ' muted autoplay loop';
                 $template        = <<<ENDHTML
-<video
-    class="%s"
-    playsinline
-    $videoAttributes>
-    <source src="%s"></source>
-</video>
+<video class="%s" playsinline $videoAttributes><source src="%s"></video>
 ENDHTML;
-                $html = sprintf(
-                    $template,
-                    $this->view->EscapeHtmlAttr($videoClass),
-                    $this->view->EscapeHtmlAttr($mediaInfo['path'])
-                );
                 break;
         }
 
-        return $html;
+        return sprintf(
+            $template,
+            $view->EscapeHtmlAttr($videoClass),
+            $view->EscapeHtmlAttr($mediaInfo['path'])
+        );
     }
 
-    protected function parsePath($path)
+    protected function parsePath($path): array
     {
         $media = [
             'provider' => null,

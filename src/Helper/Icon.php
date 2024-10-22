@@ -3,63 +3,84 @@
 namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
-use Traversable;
 
 class Icon extends AbstractHelper
 {
-    protected $options = [
-        'class'     => 'icon',
-        'base_path' => './public/asset/icon',
-        'extension' => 'svg'
-    ];
+    protected string $tag ='i';
+    protected ?string $class = null;
+    protected string $basePath = './public/asset/icon';
+    protected string $extension = 'svg';
 
-    public function __invoke($iconName, array $options = [])
+    public function __invoke($iconName, array $options = []): bool|string
     {
-        $options = array_merge($this->options, $options);
+        $this->setTag($options['tag'] ?? $this->tag);
+        $this->setClass($options['tag'] ?? $this->class);
+        $this->setBasePath($options['base_path'] ?? $this->basePath);
+        $this->setExtension($options['extension'] ?? $this->extension);
 
         $iconPath = sprintf(
             '%s/%s.%s',
-            $options['base_path'],
+            $this->getBasePath(),
             $iconName,
-            $options['extension']
+            $this->getExtension()
         );
 
-        $iconData = file_get_contents($iconPath);
+        $iconData = (file_exists($iconPath)) ? (string)file_get_contents($iconPath) : '';
 
-        return sprintf(
-            '<i class="%s">%s</i>',
-            $options['class'],
-            $iconData
-        );
+        if (! empty($this->getClass())) {
+            $iconData = sprintf(
+                '<%s class="%s">%s</%s>',
+                $this->getTag(),
+                $this->getClass(),
+                $iconData,
+                $this->getTag()
+            );
+        }
+
+        return $iconData;
     }
 
-    public function getClass()
+    public function getTag(): string
     {
-        return $this->options['class'];
+        return $this->tag;
     }
 
-    public function setClass($className)
+    public function setTag(string $tag): self
     {
-        $this->options['class'] = $className;
+        $this->tag = $tag;
+        return $this;
     }
 
-    public function getBasePath()
+    public function getClass(): ?string
     {
-        return $this->options['base_path'];
+        return $this->class;
     }
 
-    public function setBasePath($basePath)
+    public function setClass($className): self
     {
-        $this->options['base_path'] = $basePath;
+        $this->class = $className;
+        return $this;
     }
 
-    public function getExtension()
+    public function getBasePath(): string
     {
-        return $this->options['extension'];
+        return $this->basePath;
     }
 
-    public function setExtension($extension)
+    public function setBasePath($basePath): self
     {
-        $this->options['extension'] = $extension;
+        $this->basePath = $basePath;
+        return $this;
+    }
+
+    public function getExtension(): string
+    {
+        return $this->extension;
+    }
+
+    public function setExtension($extension): self
+    {
+        $this->extension = $extension;
+        return $this;
     }
 }

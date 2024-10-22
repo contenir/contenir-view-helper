@@ -6,8 +6,8 @@ use Laminas\View\Helper\AbstractHtmlElement;
 
 class Image extends AbstractHtmlElement
 {
-    protected $scheme;
-    protected $host;
+    protected mixed $scheme;
+    protected mixed $host;
 
     public function __construct($options)
     {
@@ -15,7 +15,7 @@ class Image extends AbstractHtmlElement
         $this->scheme = $options['method'] ?? 'https';
     }
 
-    public function __invoke($path, array $attributes = [], array $pictureAttributes = [])
+    public function __invoke($path, array $attributes = [], array $pictureAttributes = []): string
     {
         if (! preg_match('/^http(s)?:/', (string)$path)) {
             $info   = parse_url($path);
@@ -56,8 +56,7 @@ class Image extends AbstractHtmlElement
         ], $pictureAttributes);
 
         $imgHtml     = sprintf('<img%s data-lazyload%s', $this->htmlAttribs($imgAttributes), $this->getClosingBracket());
-        $pictureHtml = sprintf('<picture %s>%s</picture>', $this->htmlAttribs($pictureAttributes), $imgHtml);
 
-        return $pictureHtml;
+        return sprintf('<picture %s>%s</picture>', $this->htmlAttribs($pictureAttributes), $imgHtml);
     }
 }

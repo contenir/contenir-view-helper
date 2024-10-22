@@ -6,7 +6,7 @@ use Laminas\View\Helper\AbstractHelper;
 
 class Srcset extends AbstractHelper
 {
-    public function __invoke($filepath = null, array $sizes = [])
+    public function __invoke($filepath = null, array $sizes = []): string
     {
         $srcset                 = [];
         $parts                  = pathinfo($filepath);

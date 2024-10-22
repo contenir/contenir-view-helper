@@ -4,7 +4,7 @@ namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
 
-class Filesize extends AbstractHelper
+class FileSize extends AbstractHelper
 {
     public const SYSTEM_BINARY = 'binary';
     public const SYSTEM_METRIC = 'metric';
@@ -13,7 +13,7 @@ class Filesize extends AbstractHelper
         $bytes,
         $decimals = 2,
         $system = self::SYSTEM_METRIC
-    ) {
+    ): string {
         $mod = ($system === self::SYSTEM_BINARY) ? 1024 : 1000;
 
         $units = [

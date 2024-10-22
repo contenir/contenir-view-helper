@@ -6,7 +6,9 @@ use Laminas\View\Helper\AbstractHelper;
 
 class SocialLink extends AbstractHelper
 {
-    protected $socialList = [
+    use PHPViewTrait;
+
+    protected array $socialList = [
         'instagram' => [
             'title' => 'Instagram',
             'mask'  => 'http(s)?://(www\.)?instagram.com(/)?',
@@ -54,17 +56,18 @@ class SocialLink extends AbstractHelper
         ]
     ];
 
-    protected $options = [
+    protected array $options = [
         'link_class' => 'navbar__link',
         'icon_class' => 'navbar__icon',
         'icon'       => false,
     ];
 
-    public function __invoke($socialId, $link, array $options = [])
+    public function __invoke($socialId, $link, array $options = []): string
     {
         $options = array_merge($this->options, $options);
+        $view    = $this->getPHPView();
 
-        if (strpos($socialId, 'social_') === 0) {
+        if (str_starts_with($socialId, 'social_')) {
             $socialId = substr($socialId, 7);
         }
 
@@ -74,14 +77,14 @@ class SocialLink extends AbstractHelper
         }
 
         if ($options['icon']) {
-            $content = file_get_contents("./public/asset/icon/icon-{$socialId}.svg");
+            $content = file_get_contents("./public/asset/icon/icon-$socialId.svg");
         } else {
             $content = $social['title'];
         }
         $mask    = $social['mask'];
         $baseUrl = $social['url'];
 
-        $url = $this->view->UrlFormat(sprintf('%s%s', $baseUrl, preg_replace('|' . $mask . '|', '', (string)$link)));
+        $url = $view->UrlFormat(sprintf('%s%s', $baseUrl, preg_replace('|' . $mask . '|', '', (string)$link)));
 
         return sprintf('<a aria-label="%s" class="%s" target="_blank" href="%s">%s</a>', $social['title'], $options['link_class'], $url, $content);
     }
