@@ -6,6 +6,7 @@ use Laminas\Form\Element;
 use Laminas\Form\View\Helper\FormCollection;
 use Laminas\Form\View\Helper\FormElement;
 use Laminas\Form\View\Helper\FormElementErrors;
+use Laminas\Form\View\Helper\FormLabel;
 use Laminas\View\Helper\AbstractHtmlElement;
 use ReflectionClass;
 
@@ -85,7 +86,7 @@ class FormGroup extends AbstractHtmlElement
 
         $element->setLabelAttributes($labelAttributes);
 
-        $labelHtml = ($element->getLabel()) ? nl2br($element->getLabel()) : null;
+        $labelHtml = ($element->getLabel()) ? $this->getFormLabel()->openTag($element) . $element->getLabel() . $this->getFormLabel()->closeTag(): null;
 
         $descriptionHtml = '';
         if ($element->getOption('description')) {
@@ -235,6 +236,14 @@ class FormGroup extends AbstractHtmlElement
         }
 
         return $html;
+    }
+
+    protected function getFormLabel(): FormLabel
+    {
+        $helper = $this->getPHPView()->plugin(FormLabel::class);
+        assert($helper instanceof FormLabel);
+
+        return $helper;
     }
 
     protected function getFormCollection(): FormCollection
