@@ -163,14 +163,10 @@ class FormGroup extends AbstractHtmlElement
                     $multiLabelAttributes['for'] = $inputAttributes['id'];
 
                     $tag        = 'input';
-                    $attributes = $this->htmlAttribs($inputAttributes);
-                    $input      = '<' . $tag . $attributes . $this->getClosingBracket();
+                    $input      = '<' . $tag . $this->htmlAttribs($inputAttributes) . $this->getClosingBracket();
 
-                    $label = sprintf(
-                        '<label%s>%s</label>',
-                        $this->htmlAttribs($multiLabelAttributes),
-                        $label
-                    );
+                    $tag        = 'label';
+                    $label = '<' . $tag . $this->htmlAttribs($multiLabelAttributes) . '>' . $label . '</' . $tag . '>';
 
                     $html .= '<div class="form__control--' . $inputAttributes['type'] . '">' . $input . $label . '</div>';
                 }
