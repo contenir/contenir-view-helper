@@ -11,7 +11,7 @@ class Module
      *
      * @return array
      */
-    public function getConfig(): array
+    public function getConfig()
     {
         return [
             'view_helpers' => [
@@ -44,9 +44,11 @@ class Module
                     'Srcset'      => Helper\Srcset::class,
                     'truncate'    => Helper\Truncate::class,
                     'Truncate'    => Helper\Truncate::class,
+                    'resourceLink' => Helper\ResourceLink::class,
+                    'ResourceLink' => Helper\ResourceLink::class,
                     'urlFormat'   => Helper\UrlFormat::class,
                     'UrlFormat'   => Helper\UrlFormat::class,
-                    'video'   	  => Helper\Video::class,
+                    'video'       => Helper\Video::class,
                     'Video'       => Helper\Video::class,
                 ],
                 'factories' => [
@@ -57,15 +59,16 @@ class Module
                     Helper\FileSize::class    => InvokableFactory::class,
                     Helper\FileType::class    => InvokableFactory::class,
                     Helper\FormGroup::class   => InvokableFactory::class,
-                    Helper\Icon::class        => Helper\Factory\IconFactory::class,
+                    Helper\Icon::class        => InvokableFactory::class,
                     Helper\Image::class       => Helper\Factory\ImageFactory::class,
                     Helper\RichContent::class => InvokableFactory::class,
                     Helper\Settings::class    => Helper\Factory\SettingsFactory::class,
                     Helper\SocialLink::class  => InvokableFactory::class,
                     Helper\Srcset::class      => InvokableFactory::class,
                     Helper\Truncate::class    => InvokableFactory::class,
+                    Helper\ResourceLink::class => InvokableFactory::class,
                     Helper\UrlFormat::class   => InvokableFactory::class,
-                    Helper\Video::class       => InvokableFactory::class,
+                    Helper\Video::class      => InvokableFactory::class,
                 ],
             ],
             'view_manager' => [
