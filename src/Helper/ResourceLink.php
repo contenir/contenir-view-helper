@@ -10,7 +10,7 @@ class ResourceLink extends AbstractHelper
 
     protected string $defaultCta = 'Find out more';
 
-    public function __invoke(?string $value, string $defaultCta = null): array
+    public function __invoke(null|string|array $value = null, string $defaultCta = null): array
     {
         if ($defaultCta !== null) {
             $this->defaultCta = $defaultCta;
@@ -18,6 +18,10 @@ class ResourceLink extends AbstractHelper
 
         if (empty($value)) {
             return [];
+        }
+
+        if (is_array($value)) {
+            return $this->parseJson($value);
         }
 
         $decoded = json_decode($value, false);
