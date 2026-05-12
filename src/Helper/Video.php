@@ -25,14 +25,17 @@ class Video extends AbstractHtmlElement
          */
         'preloadPoster'     => true,
         /**
-         * <video preload="..."> attribute. Defaults to `none` so the video
-         * file doesn't compete with critical CSS/JS during initial paint;
-         * the Videoplay component (or any IntersectionObserver-driven
-         * autoplay) triggers the actual fetch when the element enters view.
-         * Pass `metadata` if you want browsers to fetch the moov box ahead
-         * of play, or `auto` to restore the old behaviour.
+         * <video preload="..."> attribute. Defaults to `metadata` so the
+         * browser fetches just the moov box (a few KB) — enough to satisfy
+         * autoplay policy in Safari/Chrome while keeping the video bytes
+         * themselves off the critical path until playback starts. Pass
+         * `none` to block all preloading (only viable when JS reliably
+         * calls .load() + .play() on viewport entry — `preload="none"`
+         * + autoplay is the *least* likely combo to autoplay because the
+         * browser interprets it as "developer doesn't want this loaded
+         * yet"), or `auto` for the legacy eager-fetch behaviour.
          */
-        'preload'           => 'none',
+        'preload'           => 'metadata',
     ];
 
     public function __invoke($path, array $options = [], $controls = false): string
