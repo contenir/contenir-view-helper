@@ -59,8 +59,7 @@ wrapped:
 </section>
 ```
 
-Override the template per call (or in a subclass, through the protected
-`$template` property):
+Override the template per call:
 
 | Key | Default | Meaning |
 | --- | --- | --- |

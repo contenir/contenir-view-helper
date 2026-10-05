@@ -20,12 +20,12 @@ use function substr;
  *
  * @api
  */
-class SocialLink extends AbstractHelper
+final class SocialLink extends AbstractHelper
 {
     use PHPViewTrait;
 
     /** @var array<string, array{title: string, mask: string, url: string}> */
-    protected array $socialList = [
+    private array $socialList = [
         'instagram' => [
             'title' => 'Instagram',
             'mask'  => 'http(s)?://(www\.)?instagram.com(/)?',
@@ -74,7 +74,7 @@ class SocialLink extends AbstractHelper
     ];
 
     /** @var array{link_class: string, icon_class: string, icon: bool} */
-    protected array $options = [
+    private array $options = [
         'link_class' => 'navbar__link',
         'icon_class' => 'navbar__icon',
         'icon'       => false,

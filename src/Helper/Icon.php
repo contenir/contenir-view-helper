@@ -17,12 +17,12 @@ use function sprintf;
  *
  * @api
  */
-class Icon extends AbstractHelper
+final class Icon extends AbstractHelper
 {
-    protected string  $tag       = 'i';
-    protected ?string $class     = null;
-    protected string  $basePath  = './public/asset/icon';
-    protected string  $extension = 'svg';
+    private string  $tag       = 'i';
+    private ?string $class     = null;
+    private string  $basePath  = './public/asset/icon';
+    private string  $extension = 'svg';
 
     public function getBasePath(): string
     {

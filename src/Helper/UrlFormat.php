@@ -23,11 +23,11 @@ use function str_starts_with;
  *
  * @api
  */
-class UrlFormat extends AbstractHelper
+final class UrlFormat extends AbstractHelper
 {
     use PHPViewTrait;
 
-    protected string $format = '%scheme%%host%%path%';
+    private string $format = '%scheme%%host%%path%';
 
     private static function affix(string $value, string $prefix = '', string $suffix = ''): string
     {

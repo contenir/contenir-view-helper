@@ -34,7 +34,3 @@ excludes = ["tests"]
 # change that the owner must approve first (see the 2.0 PR's follow-ups), so
 # the deprecation notices are silenced until that work is scheduled.
 ignore = ["deprecated-class", "deprecated-method"]
-# The helpers are extension points: sites subclass them to override protected
-# defaults (SocialLink::$socialList, RichContent::$template, ...). Declaring
-# them final would break those sites, so finality is not enforced.
-enforce-class-finality = false

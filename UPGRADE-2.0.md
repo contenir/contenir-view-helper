@@ -2,7 +2,8 @@
 
 2.0 registers the same helpers under the same aliases, and view scripts that
 call them positionally need no changes. The breaks affect the platform,
-named arguments, and code that extends or constructs the classes.
+named arguments, and code that extends or constructs the classes, all of
+which are now `final`.
 
 | | 1.x | 2.0 |
 | --- | --- | --- |
@@ -19,7 +20,7 @@ on the `1.x` branch.
 
 ## Native types
 
-Every public and protected method now declares its types. Calls from view
+Every public method now declares its types. Calls from view
 scripts (which do not declare `strict_types`) keep coercing scalars, but
 arguments of the wrong kind now throw a `TypeError` instead of a warning:
 
@@ -40,42 +41,17 @@ arguments of the wrong kind now throw a `TypeError` instead of a warning:
 | `UrlFormat` | `__invoke(?string $url = null, ?string $format = null): string` |
 | `Video` | `__invoke(string $path, array $options = [], bool $controls = false): string` |
 
-Return types narrowed: `Icon` (`bool|string` to `string`), `Truncate` and
-`UrlFormat` (`array|string|null` to `string`), and
-`FormGroup::getNormalisedId()` (`array|string|null` to `string`).
+Return types narrowed: `Icon` (`bool|string` to `string`), and `Truncate`
+and `UrlFormat` (`array|string|null` to `string`).
 
-### Subclasses
+### Protected members
 
-Subclasses that override a method must match the new signatures. The
-protected methods changed as follows:
-
-```php
-// 1.x
-protected function formatSection($section, $template): string;           // RichContent
-protected function formatWrapper($html, $class, $tag): string;           // RichContent
-protected function renderVideoElement($view, string $videoClass, string $src, bool $controls, array $options): string;
-protected function injectPosterPreload($view, string $poster): void;     // Video
-protected function parsePath($path): array;                              // Video
-protected function getNormalisedId($id): array|string|null;              // FormGroup
-
-// 2.0
-protected function formatSection(string $section, array $template): string;
-protected function formatWrapper(string $html, string $class, string $tag): string;
-protected function renderVideoElement(PhpRenderer $view, string $videoClass, string $src, bool $controls, array $options): string;
-protected function injectPosterPreload(PhpRenderer $view, string $poster): void;
-protected function parsePath(string $path): array;                       // always has a 'path' key
-protected function getNormalisedId(string $id): string;
-```
-
-`UrlFormat`'s protected `$_format` property is renamed `$format`:
-
-```php
-// 1.x
-class MyUrlFormat extends UrlFormat { protected string $_format = '%host%%path%'; }
-
-// 2.0
-class MyUrlFormat extends UrlFormat { protected string $format = '%host%%path%'; }
-```
+The helpers are now `final` (see below), so their protected properties and
+methods are private. This covers `RichContent::$template`,
+`SocialLink::$socialList`, `UrlFormat::$_format` (now private `$format`),
+`Video::$options`, `formatSection()`, `formatWrapper()`,
+`renderVideoElement()`, `injectPosterPreload()`, `parsePath()`,
+`getNormalisedId()` and the `FormGroup` helper getters.
 
 ## `truncate()` named argument
 
@@ -97,27 +73,55 @@ new Cache();
 new Cache($storage);
 ```
 
-## Final wiring classes
+## Every class is final
 
-`Module`, `AclFactory`, `CacheFactory`, `IconFactory`, `ImageFactory` and
-`SettingsFactory` are `final`. Decorate or replace a factory in your
-`view_helpers` configuration instead of extending it:
+`Module`, the five factories and all 17 helpers (`Acl`, `Cache`,
+`DateFormat`, `EscapeEmail`, `FileSize`, `FileType`, `FormGroup`, `Icon`,
+`Image`, `ResourceLink`, `RichContent`, `Settings`, `SocialLink`, `Srcset`,
+`Truncate`, `UrlFormat`, `Video`) are `final`. `Module::getConfig()` now
+declares an `array` return type.
+
+To customise a helper, register your own helper under the same aliases in
+the application's `view_helpers` configuration, which overrides this
+package's. It can delegate to the package's helper by class name:
+
+```php
+// 1.x
+class SocialLink extends \Contenir\View\Helper\SocialLink
+{
+    protected array $socialList = [/* … plus TikTok … */];
+}
+
+// 2.0
+final class SocialLink extends AbstractHelper
+{
+    public function __invoke(string $socialId, ?string $link, array $options = []): string
+    {
+        if ('tiktok' === $socialId) {
+            return sprintf('<a href="https://www.tiktok.com/@%s">TikTok</a>', $this->getView()->escapeHtmlAttr($link));
+        }
+
+        return $this->getView()->plugin(\Contenir\View\Helper\SocialLink::class)($socialId, $link, $options);
+    }
+}
+
+// module.config.php
+'view_helpers' => [
+    'aliases'   => ['socialLink' => SocialLink::class, 'SocialLink' => SocialLink::class],
+    'factories' => [SocialLink::class => InvokableFactory::class],
+],
+```
+
+Factories work the same way: register your own factory for the helper's
+class name instead of extending ours.
 
 ```php
 // 1.x
 class MyImageFactory extends ImageFactory { /* … */ }
 
 // 2.0
-final class MyImageFactory
-{
-    public function __invoke(ContainerInterface $container): Image
-    {
-        return new MyImage(/* … */);
-    }
-}
+'view_helpers' => ['factories' => [\Contenir\View\Helper\Image::class => MyImageFactory::class]],
 ```
-
-`Module::getConfig()` now declares an `array` return type.
 
 ## Behaviour changes
 

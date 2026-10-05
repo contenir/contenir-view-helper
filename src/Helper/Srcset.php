@@ -19,7 +19,7 @@ use function str_contains;
  *
  * @api
  */
-class Srcset extends AbstractHelper
+final class Srcset extends AbstractHelper
 {
     /**
      * @param list<int|string> $sizes Widths ("800") or dimensions ("800x600").

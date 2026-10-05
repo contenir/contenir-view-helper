@@ -12,10 +12,10 @@ use Laminas\View\Helper\AbstractHelper;
  *
  * @api
  */
-class Settings extends AbstractHelper
+final class Settings extends AbstractHelper
 {
     public function __construct(
-        protected Config $config,
+        private Config $config,
     ) {}
 
     public function __invoke(): Config

@@ -19,7 +19,7 @@ use function substr;
  *
  * @api
  */
-class Truncate extends AbstractHelper
+final class Truncate extends AbstractHelper
 {
     /**
      * @param int    $length     Maximum length including $etc; 0 returns an empty string.

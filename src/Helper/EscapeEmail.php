@@ -19,7 +19,7 @@ use function str_split;
  *
  * @api
  */
-class EscapeEmail extends AbstractHelper
+final class EscapeEmail extends AbstractHelper
 {
     private const string MAILTO = '&#109;&#97;&#105;&#108;&#116;&#111;&#58;';
 

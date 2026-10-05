@@ -11,7 +11,7 @@ use Laminas\View\Helper\AbstractHelper;
  *
  * @api
  */
-class FileType extends AbstractHelper
+final class FileType extends AbstractHelper
 {
     public function __invoke(?string $mimeType): string
     {

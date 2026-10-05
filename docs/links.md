@@ -58,8 +58,8 @@ profile URL; the network's URL prefix is stripped and re-applied.
 | `link_class` | `navbar__link` | The link's class |
 | `icon` | `false` | Inline `./public/asset/icon/icon-<network>.svg` instead of the network's name |
 
-The networks live in the protected `$socialList` property, which a subclass
-can extend.
+To support another network, register your own helper under the
+`socialLink` alias (see [Customising a helper](configuration.md#customising-a-helper)).
 
 ## `escapeEmail(string $email, bool $mailto = false): string`
 

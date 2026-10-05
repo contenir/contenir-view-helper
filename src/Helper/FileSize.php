@@ -17,7 +17,7 @@ use function sprintf;
  *
  * @api
  */
-class FileSize extends AbstractHelper
+final class FileSize extends AbstractHelper
 {
     public const string SYSTEM_BINARY = 'binary';
     public const string SYSTEM_METRIC = 'metric';

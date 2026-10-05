@@ -61,6 +61,9 @@ PascalCase alias, so view scripts call `$this->truncate(...)` or
 <?php endforeach ?>
 ```
 
+All helper classes are `final`. To customise one, register your own helper
+under the same alias; see [Customising a helper](docs/configuration.md#customising-a-helper).
+
 ## Configuration
 
 | Key | Used by | Default |

@@ -21,10 +21,10 @@ use const PHP_URL_PATH;
  *
  * @api
  */
-class Image extends AbstractHtmlElement
+final class Image extends AbstractHtmlElement
 {
-    protected ?string $host;
-    protected string $scheme;
+    private ?string $host;
+    private string $scheme;
 
     /**
      * @param array<array-key, mixed> $options CDN "host", and its scheme as "method" (default https).

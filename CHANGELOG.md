@@ -14,11 +14,11 @@ php-db QA toolchain shared by all Contenir 2.x packages. See
 ### Changed
 
 - Requires PHP 8.3, 8.4 or 8.5. PHP 8.0 to 8.2 are no longer supported.
-- Every helper, factory and protected method has native parameter and
-  return types. `truncate()`'s `$break_words` parameter is now `$breakWords`,
-  and `UrlFormat::$_format` is now `UrlFormat::$format`.
-- `Module` and the helper factories are `final`. The helpers stay open for
-  extension.
+- Every helper and factory method has native parameter and return types.
+  `truncate()`'s `$break_words` parameter is now `$breakWords`.
+- Every class is `final`: `Module`, the factories and all 17 helpers. The
+  helpers' protected properties and methods are now private. Customise a
+  helper by registering your own under the same alias.
 - `cache()` requires its storage; it could never be built without one.
 - Escaping inside the helpers uses laminas-escaper directly, with the same
   output.

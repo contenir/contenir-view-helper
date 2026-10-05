@@ -12,10 +12,10 @@ use Laminas\View\Helper\AbstractHelper;
  *
  * @api
  */
-class Acl extends AbstractHelper
+final class Acl extends AbstractHelper
 {
     public function __construct(
-        protected AclInterface $acl,
+        private AclInterface $acl,
     ) {}
 
     public function __invoke(): AclInterface

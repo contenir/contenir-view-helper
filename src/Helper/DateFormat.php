@@ -13,9 +13,9 @@ use Laminas\View\Helper\AbstractHelper;
  *
  * @api
  */
-class DateFormat extends AbstractHelper
+final class DateFormat extends AbstractHelper
 {
-    protected string $format = 'd M Y';
+    private string $format = 'd M Y';
 
     /**
      * @param string|null $datetime Any string DateTime understands; null means now.

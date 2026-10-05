@@ -37,7 +37,7 @@ use const PREG_SPLIT_NO_EMPTY;
  *     columnClass: array<array-key, string>,
  * }
  */
-class RichContent extends AbstractHelper
+final class RichContent extends AbstractHelper
 {
     use PHPViewTrait;
 
@@ -45,7 +45,7 @@ class RichContent extends AbstractHelper
     private const string COLUMN_PATTERN  = '/<(\w+)([^>]*)>([^<]*)__COL__([^<]*)<\/\1>/mi';
 
     /** @var Template */
-    protected array $template = [
+    private array $template = [
         'outerTag'    => 'section',
         'outerClass'  => 'grid grid--content',
         'innerTag'    => '',
@@ -75,7 +75,7 @@ class RichContent extends AbstractHelper
     /**
      * @param Template $template
      */
-    protected function formatSection(string $section, array $template): string
+    private function formatSection(string $section, array $template): string
     {
         $columns     = self::split(self::COLUMN_PATTERN, $section);
         $columnCount = count($columns);
@@ -96,7 +96,7 @@ class RichContent extends AbstractHelper
         return $this->formatWrapper($html, $template['outerClass'], $template['outerTag']);
     }
 
-    protected function formatWrapper(string $html, string $class, string $tag): string
+    private function formatWrapper(string $html, string $class, string $tag): string
     {
         if ('' === $tag) {
             return trim($html);

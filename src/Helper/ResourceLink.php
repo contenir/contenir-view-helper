@@ -23,11 +23,11 @@ use function json_decode;
  *
  * @api
  */
-class ResourceLink extends AbstractHelper
+final class ResourceLink extends AbstractHelper
 {
     use PHPViewTrait;
 
-    protected string $defaultCta = 'Find out more';
+    private string $defaultCta = 'Find out more';
 
     private static function optionalString(mixed $value): ?string
     {
@@ -39,29 +39,13 @@ class ResourceLink extends AbstractHelper
      *
      * @throws RuntimeException when the helper is not attached to a PhpRenderer.
      */
-    protected function createLink(string $url, ?string $cta = null, ?string $target = null): object
+    private function createLink(string $url, ?string $cta = null, ?string $target = null): object
     {
         return (object) [
             'url'    => $this->getPHPView()->plugin(UrlFormat::class)($url),
             'cta'    => in_array($cta, [null, ''], strict: true) ? $this->defaultCta : $cta,
             'target' => in_array($target, [null, ''], strict: true) ? null : $target,
         ];
-    }
-
-    /**
-     * @param array<array-key, mixed> $items
-     *
-     * @return list<object{url: string, cta: string, target: string|null}>
-     *
-     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
-     */
-    protected function parseJson(array $items): array
-    {
-        return array_values(array_filter(array_map(
-            /** @throws RuntimeException */
-            fn(mixed $item): ?object => is_object($item) ? $this->fromFields($item->fields ?? null) : null,
-            $items,
-        )));
     }
 
     /**
@@ -92,6 +76,22 @@ class ResourceLink extends AbstractHelper
     private function fromString(string $value, mixed $decoded): array
     {
         return is_array($decoded) ? $this->parseJson($decoded) : [$this->createLink($value)];
+    }
+
+    /**
+     * @param array<array-key, mixed> $items
+     *
+     * @return list<object{url: string, cta: string, target: string|null}>
+     *
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    private function parseJson(array $items): array
+    {
+        return array_values(array_filter(array_map(
+            /** @throws RuntimeException */
+            fn(mixed $item): ?object => is_object($item) ? $this->fromFields($item->fields ?? null) : null,
+            $items,
+        )));
     }
 
     /**

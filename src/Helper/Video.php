@@ -23,7 +23,7 @@ use function str_contains;
  *
  * @api
  */
-class Video extends AbstractHtmlElement
+final class Video extends AbstractHtmlElement
 {
     use PHPViewTrait;
 
@@ -50,7 +50,7 @@ class Video extends AbstractHtmlElement
      *     preload: string,
      * }
      */
-    protected array $options = [
+    private array $options = [
         'videoClass'        => 'video',
         'videoWrapperClass' => '',
         /**
@@ -86,7 +86,7 @@ class Video extends AbstractHtmlElement
      * section partial twice (e.g. preview + live) and we only want one
      * preload per URL.
      */
-    protected function injectPosterPreload(PhpRenderer $view, string $poster): void
+    private function injectPosterPreload(PhpRenderer $view, string $poster): void
     {
         $headLink = $view->plugin(HeadLink::class);
 
@@ -110,7 +110,7 @@ class Video extends AbstractHtmlElement
      * @mago-expect analysis:possibly-undefined-int-array-index A successful match always fills its groups.
      * @mago-expect analysis:invalid-return-statement A successful match always fills its groups.
      */
-    protected function parsePath(string $path): array
+    private function parsePath(string $path): array
     {
         $match = [];
         if (
@@ -137,7 +137,7 @@ class Video extends AbstractHtmlElement
      *
      * @param array{poster: string|null, preloadPoster: bool, preload: string, ...} $options
      */
-    protected function renderVideoElement(
+    private function renderVideoElement(
         PhpRenderer $view,
         string $videoClass,
         string $src,

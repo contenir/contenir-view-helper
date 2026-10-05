@@ -43,7 +43,7 @@ use function strtolower;
  *
  * @api
  */
-class FormGroup extends AbstractHtmlElement
+final class FormGroup extends AbstractHtmlElement
 {
     use PHPViewTrait;
 
@@ -52,45 +52,6 @@ class FormGroup extends AbstractHtmlElement
     private static function scalarString(mixed $value): string
     {
         return is_scalar($value) ? (string) $value : '';
-    }
-
-    /**
-     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
-     */
-    protected function getFormCollection(): FormCollection
-    {
-        return $this->getPHPView()->plugin(FormCollection::class);
-    }
-
-    /**
-     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
-     */
-    protected function getFormElement(): FormElement
-    {
-        return $this->getPHPView()->plugin(FormElement::class);
-    }
-
-    /**
-     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
-     */
-    protected function getFormElementErrors(): FormElementErrors
-    {
-        return $this->getPHPView()->plugin(FormElementErrors::class);
-    }
-
-    /**
-     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
-     */
-    protected function getFormLabel(): FormLabel
-    {
-        return $this->getPHPView()->plugin(FormLabel::class);
-    }
-
-    protected function getNormalisedId(string $id): string
-    {
-        $id = (string) preg_replace('/[^a-zA-Z0-9_\-]/', replacement: '-', subject: strtolower($id));
-
-        return (string) preg_replace('/-{2,}/', replacement: '-', subject: $id);
     }
 
     /**
@@ -126,6 +87,45 @@ class FormGroup extends AbstractHtmlElement
         }
 
         return '<p class="form__description">' . nl2br($this->escapeHtml($description)) . '</p>';
+    }
+
+    /**
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    private function getFormCollection(): FormCollection
+    {
+        return $this->getPHPView()->plugin(FormCollection::class);
+    }
+
+    /**
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    private function getFormElement(): FormElement
+    {
+        return $this->getPHPView()->plugin(FormElement::class);
+    }
+
+    /**
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    private function getFormElementErrors(): FormElementErrors
+    {
+        return $this->getPHPView()->plugin(FormElementErrors::class);
+    }
+
+    /**
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    private function getFormLabel(): FormLabel
+    {
+        return $this->getPHPView()->plugin(FormLabel::class);
+    }
+
+    private function getNormalisedId(string $id): string
+    {
+        $id = (string) preg_replace('/[^a-zA-Z0-9_\-]/', replacement: '-', subject: strtolower($id));
+
+        return (string) preg_replace('/-{2,}/', replacement: '-', subject: $id);
     }
 
     /**

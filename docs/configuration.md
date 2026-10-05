@@ -39,6 +39,31 @@ return [
 Requesting `cache()` or `acl()` when the service has the wrong type throws
 `Laminas\ServiceManager\Exception\ServiceNotCreatedException`.
 
+## Customising a helper
+
+Every helper class is `final`. To change one, write your own helper and
+register it under the same aliases; the application's `view_helpers`
+configuration is merged after this package's, so its aliases win:
+
+```php
+// module/Application/config/module.config.php
+return [
+    'view_helpers' => [
+        'aliases'   => [
+            'socialLink' => View\Helper\SocialLink::class,
+            'SocialLink' => View\Helper\SocialLink::class,
+        ],
+        'factories' => [
+            View\Helper\SocialLink::class => InvokableFactory::class,
+        ],
+    ],
+];
+```
+
+Your helper can wrap the package's one, which it can fetch from the
+renderer by class name (`$this->getView()->plugin(\Contenir\View\Helper\SocialLink::class)`),
+or replace it outright.
+
 ## `view_manager` defaults (laminas-mvc)
 
 ```php

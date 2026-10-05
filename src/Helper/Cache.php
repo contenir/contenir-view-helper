@@ -23,9 +23,9 @@ use function trim;
  *
  * @api
  */
-class Cache extends AbstractHelper
+final class Cache extends AbstractHelper
 {
-    protected OutputCache $cache;
+    private OutputCache $cache;
 
     public function __construct(StorageInterface $storage)
     {
@@ -58,7 +58,7 @@ class Cache extends AbstractHelper
         return $this->cache->start($this->getSafeKey((string) $key));
     }
 
-    protected function getSafeKey(string $key): string
+    private function getSafeKey(string $key): string
     {
         $key = (string) preg_replace('/[^a-z0-9]+/', replacement: '_', subject: strtolower($key));
 
