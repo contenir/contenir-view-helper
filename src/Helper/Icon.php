@@ -1,54 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
 
-class Icon extends AbstractHelper
+use function file_get_contents;
+use function is_file;
+use function sprintf;
+
+/**
+ * Inlines an SVG icon from disk, optionally wrapped in an element carrying
+ * a class. Per-call options override the helper's defaults for that call
+ * only.
+ *
+ * @api
+ */
+final class Icon extends AbstractHelper
 {
-    protected string $tag ='i';
-    protected ?string $class = null;
-    protected string $basePath = './public/asset/icon';
-    protected string $extension = 'svg';
+    private string  $tag       = 'i';
+    private ?string $class     = null;
+    private string  $basePath  = './public/asset/icon';
+    private string  $extension = 'svg';
 
-    public function __invoke($iconName, array $options = []): bool|string
+    public function getBasePath(): string
     {
-        $this->setTag($options['tag'] ?? $this->tag);
-        $this->setClass($options['tag'] ?? $this->class);
-        $this->setBasePath($options['base_path'] ?? $this->basePath);
-        $this->setExtension($options['extension'] ?? $this->extension);
-
-        $iconPath = sprintf(
-            '%s/%s.%s',
-            $this->getBasePath(),
-            $iconName,
-            $this->getExtension()
-        );
-
-        $iconData = (file_exists($iconPath)) ? (string)file_get_contents($iconPath) : '';
-
-        if (! empty($this->getClass())) {
-            $iconData = sprintf(
-                '<%s class="%s">%s</%s>',
-                $this->getTag(),
-                $this->getClass(),
-                $iconData,
-                $this->getTag()
-            );
-        }
-
-        return $iconData;
-    }
-
-    public function getTag(): string
-    {
-        return $this->tag;
-    }
-
-    public function setTag(string $tag): self
-    {
-        $this->tag = $tag;
-        return $this;
+        return $this->basePath;
     }
 
     public function getClass(): ?string
@@ -56,31 +34,66 @@ class Icon extends AbstractHelper
         return $this->class;
     }
 
-    public function setClass($className): self
-    {
-        $this->class = $className;
-        return $this;
-    }
-
-    public function getBasePath(): string
-    {
-        return $this->basePath;
-    }
-
-    public function setBasePath($basePath): self
-    {
-        $this->basePath = $basePath;
-        return $this;
-    }
-
     public function getExtension(): string
     {
         return $this->extension;
     }
 
-    public function setExtension($extension): self
+    public function getTag(): string
+    {
+        return $this->tag;
+    }
+
+    public function setBasePath(string $basePath): self
+    {
+        $this->basePath = $basePath;
+
+        return $this;
+    }
+
+    public function setClass(?string $className): self
+    {
+        $this->class = $className;
+
+        return $this;
+    }
+
+    public function setExtension(string $extension): self
     {
         $this->extension = $extension;
+
         return $this;
+    }
+
+    public function setTag(string $tag): self
+    {
+        $this->tag = $tag;
+
+        return $this;
+    }
+
+    /**
+     * @param array{tag?: string, class?: string|null, base_path?: string, extension?: string} $options
+     *
+     * @return string The file's contents, wrapped when a class is set; empty when the file is missing.
+     */
+    public function __invoke(string $iconName, array $options = []): string
+    {
+        $tag      = $options['tag'] ?? $this->tag;
+        $class    = $options['class'] ?? $this->class;
+        $iconPath = sprintf(
+            '%s/%s.%s',
+            $options['base_path'] ?? $this->basePath,
+            $iconName,
+            $options['extension'] ?? $this->extension,
+        );
+
+        $iconData = is_file($iconPath) ? (string) file_get_contents($iconPath) : '';
+
+        if (null === $class || '' === $class) {
+            return $iconData;
+        }
+
+        return sprintf('<%1$s class="%2$s">%3$s</%1$s>', $tag, $class, $iconData);
     }
 }

@@ -1,28 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
 
-class EscapeEmail extends AbstractHelper
+use function array_map;
+use function bin2hex;
+use function implode;
+use function sprintf;
+use function str_split;
+
+/**
+ * Obfuscates an email address against simple harvesters: as HTML entities
+ * for display, or percent-encoded behind an entity-encoded "mailto:" for
+ * an href.
+ *
+ * @api
+ */
+final class EscapeEmail extends AbstractHelper
 {
-    public function __invoke($email, $mailto = false): string
+    private const string MAILTO = '&#109;&#97;&#105;&#108;&#116;&#111;&#58;';
+
+    public function __invoke(string $email, bool $mailto = false): string
     {
-        $address = '';
-        $escape = '<!-- . -->&#x%s;';
+        $escape = $mailto ? '%%%s' : '<!-- . -->&#x%s;';
 
-        if ($mailto) {
-            $escape = '%%%s';
-        }
+        $address = implode('', array_map(
+            static fn(string $char): string => sprintf($escape, bin2hex($char)),
+            str_split($email),
+        ));
 
-        for ($x = 0; $x < strlen($email); $x++) {
-            $address .= sprintf($escape, bin2hex($email[$x]));
-        }
-
-        if ($mailto) {
-            $address = "&#109;&#97;&#105;&#108;&#116;&#111;&#58;" . $address;
-        }
-
-        return $address;
+        return $mailto ? self::MAILTO . $address : $address;
     }
 }

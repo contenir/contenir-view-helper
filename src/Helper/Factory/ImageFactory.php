@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper\Factory;
 
 use Contenir\View\Helper\Image as ImageHelper;
@@ -7,7 +9,12 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class ImageFactory
+/**
+ * Builds the image() helper from the "view_cdn" configuration.
+ *
+ * @api
+ */
+final class ImageFactory
 {
     /**
      * @throws ContainerExceptionInterface
@@ -15,8 +22,6 @@ class ImageFactory
      */
     public function __invoke(ContainerInterface $container): ImageHelper
     {
-        $config = $container->get('config')['view_cdn'] ?? [];
-
-        return new ImageHelper($config);
+        return new ImageHelper(ConfigReader::section($container, 'view_cdn'));
     }
 }
