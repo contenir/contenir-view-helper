@@ -34,7 +34,15 @@ final class FileSizeTest extends TestCase
             'binary gibibytes'            => [3 * (1024 ** 3), 2, FileSize::SYSTEM_BINARY, '3GiB'],
             'beyond yottabytes'           => [1e30, 0, FileSize::SYSTEM_METRIC, '1000000YB'],
             'unknown system has no unit'  => [1500, 2, 'imperial', '1.50'],
+            'rounds down to a whole unit' => [1001, 2, FileSize::SYSTEM_METRIC, '1kB'],
+            'rounds up keeps the places'  => [1999, 2, FileSize::SYSTEM_METRIC, '2.00kB'],
         ];
+    }
+
+    #[Test]
+    public function defaultsToTwoMetricDecimalPlaces(): void
+    {
+        static::assertSame('1.23MB', (new FileSize())(1_234_567));
     }
 
     #[Test]

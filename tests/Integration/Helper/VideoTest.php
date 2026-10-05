@@ -75,6 +75,21 @@ final class VideoTest extends TestCase
                 false,
                 '<iframe class="video" src="https://www.youtube.com/embed/abc123?fs=1&amp;showinfo=0"></iframe>',
             ],
+            'vimeo provider prefix'         => ['vimeo:123456', [], false, self::VIMEO],
+            'prefix not at the start'       => [
+                'my-youtube:abc',
+                [],
+                false,
+                '<video class="video" playsinline preload="metadata" muted autoplay loop>'
+                    . '<source src="my-youtube&#x3A;abc"></video>',
+            ],
+            'prefix spanning lines'         => [
+                "vimeo:12\n34",
+                [],
+                false,
+                '<video class="video" playsinline preload="metadata" muted autoplay loop>'
+                    . '<source src="vimeo&#x3A;12&#x0A;34"></video>',
+            ],
             'provider prefix is a file'     => [
                 'cdn:clip.mp4',
                 [],

@@ -46,6 +46,17 @@ final class RichContentTest extends TestCase
                 '<section class="grid grid--content"><div class="grid__col">A</div><div class="grid__col">B</div>'
                     . '<div class="grid__col">C</div><div class="grid__col">D</div><div class="grid__col">E</div></section>',
             ],
+            'column whitespace is trimmed'    => [
+                "\nA\n<p>__COL__</p>\nB\n",
+                [],
+                '<section class="grid grid--content"><div class="grid__col grid__col--2">A</div>'
+                    . '<div class="grid__col grid__col--2">B</div></section>',
+            ],
+            'untagged columns are trimmed'    => [
+                'A <p>__COL__</p> B',
+                ['outerTag' => 'div', 'outerClass' => '', 'columnTag' => ''],
+                '<div>AB</div>',
+            ],
             'custom template'                 => [
                 'A<p>__COL__</p>B',
                 [

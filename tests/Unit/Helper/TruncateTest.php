@@ -12,11 +12,30 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Stringable;
 
+use function str_repeat;
+use function trim;
+
 #[CoversClass(Truncate::class)]
 #[Group('unit')]
 final class TruncateTest extends TestCase
 {
     private const string FOX = 'The quick brown fox jumps';
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function defaultsProvider(): array
+    {
+        return [
+            '125 characters are kept'           => [str_repeat('a', times: 125), str_repeat('a', times: 125)],
+            '126 characters are cut'            => [str_repeat('a', times: 126), str_repeat('a', times: 122) . '...'],
+            'cut at a word boundary at the end' => [
+                str_repeat('word ', times: 30),
+                trim(str_repeat('word ', times: 24)) . '...',
+            ],
+            'tags are kept'                     => ['<b>Hi</b>', '<b>Hi</b>'],
+        ];
+    }
 
     /**
      * @return array<string, array{array{string|null, int, bool, string, bool, bool}, string}>
@@ -38,6 +57,8 @@ final class TruncateTest extends TestCase
                 ['<p>Hello <b>world</b></p>', 50, true, '...', false, false],
                 'Hello world',
             ],
+            'text at the limit is kept' => [['Hello world', 11, false, '...', false, false], 'Hello world'],
+            'drops a word ending past'  => [['ab cd efg', 7, false, '...', false, false], 'ab...'],
             'keeps tags unless asked'   => [['<b>Hi</b>', 50, false, '...', false, false], '<b>Hi</b>'],
         ];
     }
@@ -64,5 +85,12 @@ final class TruncateTest extends TestCase
     public function truncatesTheText(array $arguments, string $expected): void
     {
         static::assertSame($expected, (new Truncate())(...$arguments));
+    }
+
+    #[Test]
+    #[DataProvider('defaultsProvider')]
+    public function truncatesTo125CharactersAtAWordBoundaryByDefault(string $value, string $expected): void
+    {
+        static::assertSame($expected, (new Truncate())($value));
     }
 }
