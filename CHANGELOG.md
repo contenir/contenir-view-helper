@@ -27,6 +27,8 @@ php-db QA toolchain shared by all Contenir 2.x packages. See
 
 ### Added
 
+- `LICENSE.md` with the BSD-3-Clause text `composer.json` already declared.
+
 - `Contenir\View\ConfigProvider`. composer.json already pointed the Laminas
   component installer at it, but the class did not exist.
 - `AclFactory::SERVICE` and `CacheFactory::SERVICE` constants. Both
