@@ -1,89 +1,81 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\Uri\Exception\InvalidArgumentException;
-use Laminas\View\Helper\AbstractHelper;
 use Laminas\Uri\UriFactory;
+use Laminas\Uri\UriInterface;
+use Laminas\View\Exception\RuntimeException;
+use Laminas\View\Helper\AbstractHelper;
+use Laminas\View\Helper\ServerUrl;
 
+use function preg_match;
+use function preg_replace_callback;
+use function str_starts_with;
+
+/**
+ * Normalises a URL and renders it through a format of %part% placeholders:
+ * %scheme%, %userinfo%, %host%, %port%, %path%, %query% and %fragment%.
+ * Root-relative URLs are made absolute against the current server, and
+ * URLs without a scheme are assumed to be http.
+ *
+ * @api
+ */
 class UrlFormat extends AbstractHelper
 {
     use PHPViewTrait;
 
-    protected string $_format = '%scheme%%host%%path%';
+    protected string $format = '%scheme%%host%%path%';
 
-    public function __invoke($url = null, $format = null): array|string|null
+    private static function affix(string $value, string $prefix = '', string $suffix = ''): string
     {
-        if ($format === null) {
-            $format = $this->_format;
+        return '' === $value ? '' : $prefix . $value . $suffix;
+    }
+
+    private static function formatPart(UriInterface $uri, string $part): string
+    {
+        return match ($part) {
+            'scheme'   => self::affix((string) $uri->getScheme(), suffix: '://'),
+            'userinfo' => (string) $uri->getUserInfo(),
+            'host'     => (string) $uri->getHost(),
+            'port'     => (string) $uri->getPort(),
+            'path'     => (string) $uri->getPath(),
+            'query'    => self::affix((string) $uri->getQuery(), prefix: '?'),
+            'fragment' => self::affix((string) $uri->getFragment(), prefix: '#'),
+            default    => '',
+        };
+    }
+
+    /**
+     * @return string The formatted URL, or an empty string when $url is empty or invalid.
+     *
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    public function __invoke(?string $url = null, ?string $format = null): string
+    {
+        if (null === $url || '' === $url) {
+            return '';
         }
 
-        $view = $this->getPHPView();
-
-        if (! preg_match('/^[a-z]+:\/\//', (string)$url)) {
-            if ($url[0] === '/') {
-                $url = $view->ServerUrl() . $url;
-            } else {
-                $url = 'http://' . $url;
-            }
+        if (1 !== preg_match('/^[a-z]+:\/\//', $url)) {
+            $url = str_starts_with($url, '/')
+                ? $this->getPHPView()->plugin(ServerUrl::class)->__invoke() . $url
+                : "http://{$url}";
         }
 
         try {
-            $uri          = UriFactory::factory($url);
-            $formattedUrl = preg_replace_callback(
-                '/%(\w+)%/',
-                function ($matches) use ($uri) {
-                    switch ($matches[1]) {
-                        case 'scheme':
-                            $part = $uri->getScheme();
-                            if ($part) {
-                                $part .= '://';
-                            }
-                            break;
-
-                        case 'userinfo':
-                            $part = $uri->getUserInfo();
-                            break;
-
-                        case 'host':
-                            $part = $uri->getHost();
-                            break;
-
-                        case 'port':
-                            $part = $uri->getPort();
-                            break;
-
-                        case 'path':
-                            $part = $uri->getPath();
-                            break;
-
-                        case 'query':
-                            $part = $uri->getQuery();
-                            if ($part) {
-                                $part = '?' . $part;
-                            }
-                            break;
-
-                        case 'fragment':
-                            $part = $uri->getFragment();
-                            if ($part) {
-                                $part = '#' . $part;
-                            }
-                            break;
-
-                        default:
-                            $part = '';
-                            break;
-                    }
-
-                    return $part;
-                },
-                $format
-            );
+            $uri = UriFactory::factory($url);
         } catch (InvalidArgumentException) {
-            $formattedUrl = '';
+            return '';
         }
 
-        return $formattedUrl;
+        return (string) preg_replace_callback(
+            '/%(\w+)%/',
+            /** @param array<array-key, string> $matches */
+            static fn(array $matches): string => self::formatPart($uri, $matches[1] ?? ''),
+            $format ?? $this->format,
+        );
     }
 }

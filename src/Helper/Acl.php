@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\Permissions\Acl\AclInterface;
 use Laminas\View\Helper\AbstractHelper;
 
+/**
+ * Exposes the application ACL to view scripts: `$this->acl()->isAllowed(...)`.
+ *
+ * @api
+ */
 class Acl extends AbstractHelper
 {
-    protected AclInterface $acl;
-
-    public function __construct(AclInterface $acl)
-    {
-        $this->acl = $acl;
-    }
+    public function __construct(
+        protected AclInterface $acl,
+    ) {}
 
     public function __invoke(): AclInterface
     {

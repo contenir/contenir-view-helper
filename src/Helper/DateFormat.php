@@ -1,27 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
-use Laminas\View\Helper\AbstractHelper;
 use DateTime;
 use Exception;
+use Laminas\View\Helper\AbstractHelper;
 
+/**
+ * Formats a date string, returning null when it cannot be parsed.
+ *
+ * @api
+ */
 class DateFormat extends AbstractHelper
 {
     protected string $format = 'd M Y';
 
-    public function __invoke($datetime = null, $format = null): ?string
+    /**
+     * @param string|null $datetime Any string DateTime understands; null means now.
+     * @param string|null $format   A date() format; null uses the helper default.
+     */
+    public function __invoke(?string $datetime = null, ?string $format = null): ?string
     {
-        if ($format === null) {
-            $format = $this->format;
-        }
-
         try {
-            $date = (new DateTime($datetime))->format($format);
+            return (new DateTime($datetime ?? 'now'))->format($format ?? $this->format);
         } catch (Exception) {
-            $date = null;
+            return null;
         }
-
-        return $date;
     }
 }

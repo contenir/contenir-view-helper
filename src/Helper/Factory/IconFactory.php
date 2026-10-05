@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper\Factory;
 
 use Contenir\View\Helper\Icon as IconHelper;
@@ -7,22 +9,29 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class IconFactory
+use function is_string;
+
+/**
+ * Builds the icon() helper, applying a default wrapper class from
+ * "view_helper_config.icon.class".
+ *
+ * @api
+ */
+final class IconFactory
 {
     /**
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     *
+     * @mago-expect analysis:mixed-assignment Configuration is untyped input; narrowed here.
      */
     public function __invoke(ContainerInterface $container): IconHelper
     {
         $helper = new IconHelper();
-        $config = $container->get('config');
+        $class  = ConfigReader::section($container, 'view_helper_config', 'icon')['class'] ?? null;
 
-        if (isset($config['view_helper_config']['icon'])) {
-            $configHelper = $config['view_helper_config']['icon'];
-            if (isset($configHelper['class'])) {
-                $helper->setClass($configHelper['class']);
-            }
+        if (is_string($class)) {
+            $helper->setClass($class);
         }
 
         return $helper;

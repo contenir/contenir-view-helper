@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\Config\Config;
 use Laminas\View\Helper\AbstractHelper;
 
+/**
+ * Exposes the application's "settings" configuration to view scripts.
+ *
+ * @api
+ */
 class Settings extends AbstractHelper
 {
-    protected Config $config;
-
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
+    public function __construct(
+        protected Config $config,
+    ) {}
 
     public function __invoke(): Config
     {

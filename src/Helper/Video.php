@@ -1,14 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
+use Laminas\View\Exception\RuntimeException;
 use Laminas\View\Helper\AbstractHtmlElement;
+use Laminas\View\Helper\HeadLink;
 use Laminas\View\Helper\Placeholder\Container\AbstractContainer;
+use Laminas\View\Renderer\PhpRenderer;
 
+use function array_filter;
+use function implode;
+use function preg_match;
+use function sprintf;
+use function str_contains;
+
+/**
+ * Renders a video: a Vimeo or YouTube embed for a provider URL, or a
+ * <video> element for anything else (including Vimeo "external" file
+ * links).
+ *
+ * @api
+ */
 class Video extends AbstractHtmlElement
 {
     use PHPViewTrait;
 
+    private const string VIMEO_TEMPLATE = <<<'HTML'
+        <iframe
+            class="%s"
+            src="https://player.vimeo.com/video/%s?autoplay=0&mute=0&loop=0&title=0&byline=0&portrait=0"
+            data-vimeo-portrait="false"
+            data-vimeo-byline="false"
+            data-vimeo-title="false"
+            data-vimeo="1"
+            allowfullscreen>
+        </iframe>
+        HTML;
+
+    private const string YOUTUBE_TEMPLATE = '<iframe class="%s" src="https://www.youtube.com/embed/%s?fs=1&amp;showinfo=0"></iframe>';
+
+    /**
+     * @var array{
+     *     videoClass: string,
+     *     videoWrapperClass: string,
+     *     poster: string|null,
+     *     preloadPoster: bool,
+     *     preload: string,
+     * }
+     */
     protected array $options = [
         'videoClass'        => 'video',
         'videoWrapperClass' => '',
@@ -16,14 +57,14 @@ class Video extends AbstractHtmlElement
          * Explicit poster URL. When set, becomes the LCP candidate so the
          * fullscreen-hero LCP isn't blocked on the first video frame.
          */
-        'poster'            => null,
+        'poster' => null,
         /**
          * When a poster is set and this is true, the helper queues a
          * <link rel="preload" as="image" fetchpriority="high"> via HeadLink
          * so the poster lands in the request waterfall ahead of late-
          * discovered resources.
          */
-        'preloadPoster'     => true,
+        'preloadPoster' => true,
         /**
          * <video preload="..."> attribute. Defaults to `metadata` so the
          * browser fetches just the moov box (a few KB) — enough to satisfy
@@ -35,105 +76,8 @@ class Video extends AbstractHtmlElement
          * browser interprets it as "developer doesn't want this loaded
          * yet"), or `auto` for the legacy eager-fetch behaviour.
          */
-        'preload'           => 'metadata',
+        'preload' => 'metadata',
     ];
-
-    public function __invoke($path, array $options = [], $controls = false): string
-    {
-        $options = array_merge($this->options, $options);
-        $view = $this->getPHPView();
-
-        $mediaInfo = $this->parsePath($path);
-        $provider  = $mediaInfo['provider'];
-
-        $videoClass = $options['videoClass'];
-
-        switch ($provider) {
-            case 'vimeo':
-                if (str_contains($path, 'external')) {
-                    return $this->renderVideoElement($view, $videoClass, $path, $controls, $options);
-                }
-
-                $template = <<<ENDHTML
-<iframe
-    class="%s"
-    src="https://player.vimeo.com/video/%s?autoplay=0&mute=0&loop=0&title=0&byline=0&portrait=0"
-    data-vimeo-portrait="false"
-    data-vimeo-byline="false"
-    data-vimeo-title="false"
-    data-vimeo="1"
-    allowfullscreen>
-</iframe>
-ENDHTML;
-                if (! empty($options['videoWrapperClass'])) {
-                    $template = sprintf(
-                        '<div class="%s">%s</div>',
-                        $options['videoWrapperClass'],
-                        $template
-                    );
-                }
-                break;
-
-            case 'youtube':
-                $template = <<<ENDHTML
-<iframe class="%s" src="https://www.youtube.com/embed/%s?fs=1&amp;showinfo=0"></iframe>
-ENDHTML;
-                break;
-
-            default:
-                return $this->renderVideoElement($view, $videoClass, $path, $controls, $options);
-        }
-
-        return sprintf(
-            $template,
-            $view->EscapeHtmlAttr($videoClass),
-            $view->EscapeHtmlAttr($mediaInfo['path'])
-        );
-    }
-
-    /**
-     * Render a `<video>` element. Centralised so both the raw-MP4 default
-     * and the Vimeo "external" branch share attribute handling (poster,
-     * preload, autoplay flags) and the same HeadLink preload injection.
-     */
-    protected function renderVideoElement(
-        $view,
-        string $videoClass,
-        string $src,
-        bool $controls,
-        array $options
-    ): string {
-        $attributes = [
-            sprintf('class="%s"', $view->EscapeHtmlAttr($videoClass)),
-            'playsinline',
-        ];
-
-        if (! empty($options['poster'])) {
-            $attributes[] = sprintf('poster="%s"', $view->EscapeHtmlAttr($options['poster']));
-        }
-
-        if (! empty($options['preload'])) {
-            $attributes[] = sprintf('preload="%s"', $view->EscapeHtmlAttr($options['preload']));
-        }
-
-        if ($controls) {
-            $attributes[] = 'controls';
-        } else {
-            $attributes[] = 'muted';
-            $attributes[] = 'autoplay';
-            $attributes[] = 'loop';
-        }
-
-        if (! empty($options['poster']) && ! empty($options['preloadPoster'])) {
-            $this->injectPosterPreload($view, $options['poster']);
-        }
-
-        return sprintf(
-            '<video %s><source src="%s"></video>',
-            implode(' ', $attributes),
-            $view->EscapeHtmlAttr($src)
-        );
-    }
 
     /**
      * Queue a high-priority preload <link> for the poster image so it
@@ -142,15 +86,12 @@ ENDHTML;
      * section partial twice (e.g. preview + live) and we only want one
      * preload per URL.
      */
-    protected function injectPosterPreload($view, string $poster): void
+    protected function injectPosterPreload(PhpRenderer $view, string $poster): void
     {
-        $headLink = $view->plugin('headLink');
+        $headLink = $view->plugin(HeadLink::class);
 
         foreach ($headLink->getContainer() as $existing) {
-            if (
-                ($existing->rel ?? null) === 'preload'
-                && ($existing->href ?? null) === $poster
-            ) {
+            if (($existing->rel ?? null) === 'preload' && ($existing->href ?? null) === $poster) {
                 return;
             }
         }
@@ -163,32 +104,104 @@ ENDHTML;
         ], AbstractContainer::PREPEND);
     }
 
-    protected function parsePath($path): array
+    /**
+     * @return array{provider: string|null, path: string}
+     *
+     * @mago-expect analysis:possibly-undefined-int-array-index A successful match always fills its groups.
+     * @mago-expect analysis:invalid-return-statement A successful match always fills its groups.
+     */
+    protected function parsePath(string $path): array
     {
-        $media = [
-            'provider' => null,
-            'id'       => null
-        ];
-
+        $match = [];
         if (
-            preg_match(
+            1 === preg_match(
                 '/(http:\/\/)?(?:www.)?(vimeo|youtube).com\/(?:watch\?v=|video\/)?(.*?)(?:\z|&)/',
-                (string)$path,
+                $path,
                 $match,
-                PREG_OFFSET_CAPTURE
             )
         ) {
-            $media['provider'] = $match[2][0];
-            $media['path']     = $match[3][0];
-            return $media;
+            return ['provider' => $match[2], 'path' => $match[3]];
         }
 
-        if (preg_match('/^(\w+):(.*)$/', $path, $match, PREG_OFFSET_CAPTURE)) {
-            $media['provider'] = $match[1][0];
-            $media['path']     = $match[2][0];
-            return $media;
+        if (1 === preg_match('/^(\w+):(.*)$/', $path, $match)) {
+            return ['provider' => $match[1], 'path' => $match[2]];
         }
 
-        return $media;
+        return ['provider' => null, 'path' => ''];
+    }
+
+    /**
+     * Render a `<video>` element. Centralised so both the raw-MP4 default
+     * and the Vimeo "external" branch share attribute handling (poster,
+     * preload, autoplay flags) and the same HeadLink preload injection.
+     *
+     * @param array{poster: string|null, preloadPoster: bool, preload: string, ...} $options
+     */
+    protected function renderVideoElement(
+        PhpRenderer $view,
+        string $videoClass,
+        string $src,
+        bool $controls,
+        array $options,
+    ): string {
+        $poster     = (string) $options['poster'];
+        $attributes = [
+            sprintf('class="%s"', $this->escapeHtmlAttr($videoClass)),
+            'playsinline',
+            '' === $poster ? null : sprintf('poster="%s"', $this->escapeHtmlAttr($poster)),
+            '' === $options['preload'] ? null : sprintf('preload="%s"', $this->escapeHtmlAttr($options['preload'])),
+            ...($controls ? ['controls'] : ['muted', 'autoplay', 'loop']),
+        ];
+
+        if ('' !== $poster && $options['preloadPoster']) {
+            $this->injectPosterPreload($view, $poster);
+        }
+
+        return sprintf(
+            '<video %s><source src="%s"></video>',
+            implode(' ', array_filter($attributes, static fn(?string $attribute): bool => null !== $attribute)),
+            $this->escapeHtmlAttr($src),
+        );
+    }
+
+    /**
+     * @param array{
+     *     videoClass?: string,
+     *     videoWrapperClass?: string,
+     *     poster?: string|null,
+     *     preloadPoster?: bool,
+     *     preload?: string,
+     * } $options
+     * @param bool $controls Show the native controls; without them the video autoplays muted on loop.
+     *
+     * @throws RuntimeException when the helper is not attached to a PhpRenderer.
+     */
+    public function __invoke(string $path, array $options = [], bool $controls = false): string
+    {
+        $options = [...$this->options, ...$options];
+        $view    = $this->getPHPView();
+        $media   = $this->parsePath($path);
+
+        $template = match ($media['provider']) {
+            'vimeo'   => str_contains($path, 'external') ? null : self::VIMEO_TEMPLATE,
+            'youtube' => self::YOUTUBE_TEMPLATE,
+            default   => null,
+        };
+
+        if (null === $template) {
+            return $this->renderVideoElement($view, $options['videoClass'], $path, $controls, $options);
+        }
+
+        $embed = sprintf(
+            $template,
+            $this->escapeHtmlAttr($options['videoClass']),
+            $this->escapeHtmlAttr($media['path']),
+        );
+
+        if ('vimeo' !== $media['provider'] || '' === $options['videoWrapperClass']) {
+            return $embed;
+        }
+
+        return sprintf('<div class="%s">%s</div>', $this->escapeHtml($options['videoWrapperClass']), $embed);
     }
 }

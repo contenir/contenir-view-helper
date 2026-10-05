@@ -1,14 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper\Factory;
 
 use Contenir\View\Helper\Settings;
+use Laminas\Config\Config;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Laminas\Config\Config;
 use Psr\Container\NotFoundExceptionInterface;
 
-class SettingsFactory
+/**
+ * Builds the settings() helper from the "settings" configuration.
+ *
+ * @api
+ */
+final class SettingsFactory
 {
     /**
      * @throws ContainerExceptionInterface
@@ -16,8 +23,6 @@ class SettingsFactory
      */
     public function __invoke(ContainerInterface $container): Settings
     {
-        $config = new Config($container->get('config')['settings'] ?? []);
-
-        return new Settings($config);
+        return new Settings(new Config(ConfigReader::section($container, 'settings')));
     }
 }

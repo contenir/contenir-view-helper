@@ -1,30 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
 
+use function array_map;
+use function explode;
+use function implode;
+use function pathinfo;
+use function sprintf;
+use function str_contains;
+
+/**
+ * Builds a srcset attribute value from pre-resized derivatives named
+ * "<dir>/<name>_<width>x[<height>].<ext>".
+ *
+ * @api
+ */
 class Srcset extends AbstractHelper
 {
-    public function __invoke($filepath = null, array $sizes = []): string
+    /**
+     * @param list<int|string> $sizes Widths ("800") or dimensions ("800x600").
+     */
+    public function __invoke(?string $filepath = null, array $sizes = []): string
     {
-        $srcset                 = [];
-        $parts                  = pathinfo($filepath);
+        $parts     = pathinfo($filepath ?? '');
+        $dirname   = $parts['dirname'] ?? '.';
+        $extension = null === ($parts['extension'] ?? null) ? '' : ".{$parts['extension']}";
 
-        foreach ($sizes as $size) {
-            $dimensions = explode('x', $size);
-            $resizeDimensions = (count($dimensions) > 1) ? $size : sprintf('%sx', $dimensions[0]);
+        return implode(',', array_map(
+            static function (int|string $size) use ($parts, $dirname, $extension): string {
+                $size  = (string) $size;
+                $width = explode('x', $size)[0];
 
-            $srcset[] = sprintf(
-                "%s/%s_%s.%s %sw",
-                $parts['dirname'],
-                $parts['filename'],
-                $resizeDimensions,
-                $parts['extension'],
-                $dimensions[0]
-            );
-        }
-
-        return join(',', $srcset);
+                return sprintf(
+                    '%s/%s_%s%s %sw',
+                    $dirname,
+                    $parts['filename'],
+                    str_contains($size, 'x') ? $size : "{$width}x",
+                    $extension,
+                    $width,
+                );
+            },
+            $sizes,
+        ));
     }
 }

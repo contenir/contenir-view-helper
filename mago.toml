@@ -1,0 +1,40 @@
+extends = "vendor/php-db/phpdb-qa-tools/mago.toml"
+php-version = "8.3.0"
+
+[source]
+paths = ["src", "tests"]
+includes = ["vendor"]
+
+[formatter]
+# Keep `(new Foo())->bar()`: CI formats under each job's PHP version, and the
+# unparenthesised form PHP 8.4+ allows does not parse on 8.3, the minimum.
+parentheses-around-new-in-member-access = true
+
+[linter.rules]
+# The shared base excludes "test/"; this repository keeps its suites under "tests/".
+# FormGroup's option rendering is split into private methods; see
+# cyclomatic-complexity below for why it is not split into classes yet.
+too-many-methods = { exclude = ["tests/", "src/Helper/FormGroup.php"] }
+# Truncate, EscapeEmail and Video take boolean switches as part of their 1.x
+# view-script API (`$this->truncate($text, 80, true)`). Replacing them with
+# separate methods would break every template that calls them.
+no-boolean-flag-parameter = { exclude = ["src/Helper/"] }
+# Truncate's six positional parameters are its 1.x view-script API, kept as is.
+excessive-parameter-list = { exclude = ["src/Helper/Truncate.php"] }
+# FormGroup renders every laminas-form element type and Video every provider,
+# each in one class. Bringing them under the threshold means splitting them
+# into per-type renderers, a structural change proposed as a 2.x follow-up.
+cyclomatic-complexity = { exclude = ["src/Helper/FormGroup.php", "src/Helper/Video.php"] }
+
+[analyzer]
+excludes = ["tests"]
+# Every helper extends laminas-view's AbstractHelper and reaches sibling helpers
+# through getView()/PhpRenderer::plugin(). laminas-view 2.40 deprecated all
+# three ahead of 3.0. Moving to constructor-injected helpers is a structural
+# change that the owner must approve first (see the 2.0 PR's follow-ups), so
+# the deprecation notices are silenced until that work is scheduled.
+ignore = ["deprecated-class", "deprecated-method"]
+# The helpers are extension points: sites subclass them to override protected
+# defaults (SocialLink::$socialList, RichContent::$template, ...). Declaring
+# them final would break those sites, so finality is not enforced.
+enforce-class-finality = false

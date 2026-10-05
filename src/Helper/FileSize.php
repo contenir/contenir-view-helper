@@ -1,57 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
 
+use function abs;
+use function floor;
+use function round;
+use function sprintf;
+
+/**
+ * Formats a byte count as a human-readable size: "1.5MB", or "1.5MiB" in
+ * the binary system.
+ *
+ * @api
+ */
 class FileSize extends AbstractHelper
 {
-    public const SYSTEM_BINARY = 'binary';
-    public const SYSTEM_METRIC = 'metric';
+    public const string SYSTEM_BINARY = 'binary';
+    public const string SYSTEM_METRIC = 'metric';
 
-    public function __invoke(
-        $bytes,
-        $decimals = 2,
-        $system = self::SYSTEM_METRIC
-    ): string {
-        $mod = ($system === self::SYSTEM_BINARY) ? 1024 : 1000;
+    private const int MAX_FACTOR = 8;
 
-        $units = [
-            self::SYSTEM_BINARY => [
-                'B',
-                'KiB',
-                'MiB',
-                'GiB',
-                'TiB',
-                'PiB',
-                'EiB',
-                'ZiB',
-                'YiB',
-            ],
-            self::SYSTEM_METRIC => [
-                'B',
-                'kB',
-                'MB',
-                'GB',
-                'TB',
-                'PB',
-                'EB',
-                'ZB',
-                'YB',
-            ],
-        ];
+    private const array UNITS = [
+        self::SYSTEM_BINARY => ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'],
+        self::SYSTEM_METRIC => ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+    ];
 
-        $factor = floor((strlen($bytes) - 1) / 3);
-        $value = $bytes / pow($mod, $factor);
+    /**
+     * @param int|float|numeric-string $bytes
+     * @param int                      $decimals Decimal places, dropped when the value is whole.
+     * @param string                   $system   One of the SYSTEM_* constants. Any other value
+     *                                           scales by 1000 and omits the unit.
+     */
+    public function __invoke(int|float|string $bytes, int $decimals = 2, string $system = self::SYSTEM_METRIC): string
+    {
+        $base   = self::SYSTEM_BINARY === $system ? 1024 : 1000;
+        $units  = self::UNITS[$system] ?? [];
+        $value  = (float) $bytes;
+        $factor = 0;
 
-        if (floor($value) == sprintf("%.{$decimals}f", $value)) {
+        while (abs($value) >= $base && $factor < self::MAX_FACTOR) {
+            $value /= $base;
+            ++$factor;
+        }
+
+        if (round($value, $decimals) === floor($value)) {
             $decimals = 0;
         }
 
-        return sprintf(
-            "%.{$decimals}f%s",
-            $value,
-            $units[$system][$factor] ?? ''
-        );
+        return sprintf("%.{$decimals}f%s", $value, $units[$factor] ?? '');
     }
 }
