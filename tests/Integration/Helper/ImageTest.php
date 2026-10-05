@@ -59,6 +59,14 @@ final class ImageTest extends TestCase
                 '<picture class="picture"><img src="&#x3F;width&#x3D;20&amp;auto_optimize&#x3D;high" '
                     . 'data-src="&#x3F;auto_optimize&#x3D;high" class="img" alt="" data-lazyload></picture>',
             ],
+            'URL inside a local path'     => [
+                [],
+                '/proxy?u=https://images.example.org/a.jpg',
+                [],
+                [],
+                '<picture class="picture"><img src="&#x2F;proxy&#x3F;width&#x3D;20&amp;auto_optimize&#x3D;high" '
+                    . 'data-src="&#x2F;proxy&#x3F;auto_optimize&#x3D;high" class="img" alt="" data-lazyload></picture>',
+            ],
             'absolute URL as it is'       => [
                 ['host' => 'cdn.example.com'],
                 'https://images.example.org/a.jpg',

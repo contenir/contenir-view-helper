@@ -48,6 +48,11 @@ final class UrlFormatTest extends TestCase
             'no port'                                    => ['file:///tmp/a.txt', '[%port%]%path%', '[]/tmp/a.txt'],
             'scheme-less URL is assumed http'            => ['example.org/page', null, 'http://example.org/page'],
             'root-relative URL uses the current server'  => ['/about', null, 'https://www.example.com/about'],
+            'scheme later in a scheme-less URL'          => [
+                'example.org/go?to=https://x.org',
+                null,
+                'http://example.org/go',
+            ],
             'host only'                                  => ['https://www.example.org/a', '%host%', 'www.example.org'],
             'empty URL'                                  => ['', null, ''],
             'no URL'                                     => [null, null, ''],

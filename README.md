@@ -91,6 +91,7 @@ composer static-analysis   # mago analyze
 composer test              # unit suite: helpers and factories with doubled collaborators, no I/O
 composer test-integration  # integration suite: a real PhpRenderer and plugin manager, temp-directory files
 composer test-coverage     # both suites, clover.xml for Codecov
+composer mutation-test     # Infection mutation testing over both suites (not part of check: about 2 minutes)
 ```
 
 ## License

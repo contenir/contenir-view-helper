@@ -16,6 +16,7 @@ use Laminas\Form\Element\MultiCheckbox;
 use Laminas\Form\Element\Radio;
 use Laminas\Form\Element\Select;
 use Laminas\Form\Element\Text;
+use Laminas\Form\Fieldset;
 use Laminas\Form\Form;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -59,6 +60,41 @@ final class FormGroupTest extends TestCase
     }
 
     #[Test]
+    public function anOptionDisabledByItsSpecificationOverridesTheElement(): void
+    {
+        $element = new MultiCheckbox('t', ['value_options' => [['value' => 'a', 'label' => 'A', 'disabled' => true]]]);
+        $element->setAttribute('disabled', false);
+
+        static::assertStringContainsString(
+            '<input type="checkbox" name="t&#x5B;&#x5D;" disabled="1" class=""',
+            $this->render($element),
+        );
+    }
+
+    #[Test]
+    public function anOptionMatchingTheValueIsCheckedEvenWhenItsSpecificationSaysNot(): void
+    {
+        $element = new MultiCheckbox('t', ['value_options' => [['value' => 'a', 'label' => 'A', 'selected' => false]]]);
+        $element->setValue(['a']);
+
+        static::assertStringContainsString('value="a" checked="1"', $this->render($element));
+    }
+
+    #[Test]
+    public function anOptionStaysDisabledWithTheElementDespiteItsOwnAttributes(): void
+    {
+        $element = new MultiCheckbox('t', [
+            'value_options' => [['value' => 'a', 'label' => 'A', 'attributes' => ['disabled' => false]]],
+        ]);
+        $element->setAttribute('disabled', true);
+
+        static::assertStringContainsString(
+            '<input type="checkbox" name="t&#x5B;&#x5D;" disabled="1" class=""',
+            $this->render($element),
+        );
+    }
+
+    #[Test]
     public function appliesDisplayAndGroupAttributes(): void
     {
         $element = new Text('q', ['label' => 'Search', 'label_attributes' => ['class' => 'sr-only']]);
@@ -92,6 +128,15 @@ final class FormGroupTest extends TestCase
     }
 
     #[Test]
+    public function givesFieldsetsTheSelectControlClass(): void
+    {
+        $element = new Fieldset('address');
+        $this->render($element);
+
+        static::assertSame('form__control form__control--select', $element->getAttribute('class'));
+    }
+
+    #[Test]
     public function givesSelectsTheSelectControlClass(): void
     {
         $element = new Select('size', ['value_options' => ['s' => 'Small']]);
@@ -113,6 +158,18 @@ final class FormGroupTest extends TestCase
             '<div  class="form__group"><div class="form__group--options"><div class="form__control--checkbox">'
                 . '<input type="checkbox" name="all&#x5B;&#x5D;" selected="1" disabled="1" class="" id="form-element-all-a" '
                 . 'value="a" checked="1"><label for="form-element-all-a">A</label></div></div></div>',
+            $this->render($element),
+        );
+    }
+
+    #[Test]
+    public function listsErrorsBeforeTheDescription(): void
+    {
+        $element = new Text('email', ['description' => 'Your work address']);
+        $element->setMessages(['isEmpty' => 'Required']);
+
+        static::assertStringEndsWith(
+            '<ul class="form__errors"><li>Required</li></ul><p class="form__description">Your work address</p></div>',
             $this->render($element),
         );
     }
@@ -189,6 +246,16 @@ final class FormGroupTest extends TestCase
         $element->setAttribute('selected', true);
 
         static::assertStringNotContainsString('checked', $this->render($element));
+    }
+
+    #[Test]
+    public function removesTheGroupClassFromTheElement(): void
+    {
+        $element = new Text('city');
+        $element->setAttribute('group_class', 'half');
+        $this->render($element);
+
+        static::assertFalse($element->hasAttribute('group_class'));
     }
 
     #[Test]

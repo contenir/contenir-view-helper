@@ -1,0 +1,42 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": { "directories": ["src"] },
+    "timeout": 10,
+    "threads": "max",
+    "logs": {
+        "text": "infection.log",
+        "summary": "summary.log",
+        "stryker": { "badge": "/^(main|master)$/" }
+    },
+    "mutators": {
+        "@default": true,
+        "CastBool": {
+            "ignoreSourceCodeByRegex": [
+                // FormGroup::groupClass(): the cast sits directly in an if condition, which
+                // already evaluates the attribute's truthiness the same way.
+                "if \\(\\(bool\\) \\$element->getAttribute\\('data-field-dependancy'\\)\\) \\{",
+                // FormGroup::renderOption(): $disabled is only read by `if ($disabled)`, so
+                // the uncast value has the same truthiness.
+                "\\$disabled = \\(bool\\) \\(\\$spec\\['disabled'\\] \\?\\? \\$attributes\\['disabled'\\] \\?\\? false\\);"
+            ]
+        },
+        "CastString": {
+            "ignoreSourceCodeByRegex": [
+                // FormGroup::renderOptions(): the name is concatenated straight away, and
+                // concatenation already turns a null name into "".
+                "'name' => \\(string\\) \\$element->getName\\(\\) \\. \\('multicheckbox' === \\$elementType \\? '\\[\\]' : ''\\),",
+                // SocialLink::__invoke(): preg_replace() only returns null on a PCRE error, and
+                // the masks are fixed, valid patterns without the /u modifier, so it cannot fail.
+                "\\$handle\\s+= \\(string\\) preg_replace\\(.*"
+            ]
+        },
+        "ReturnRemoval": {
+            "ignore": [
+                // RichContent::__invoke(): without the early return a null $content is cast to
+                // "", which splits into no sections and returns "" anyway.
+                "Contenir\\View\\Helper\\RichContent::__invoke::123"
+            ]
+        }
+    },
+    "staticAnalysisTool": "mago"
+}
