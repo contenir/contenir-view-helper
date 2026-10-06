@@ -10,7 +10,7 @@
     ],
     "homepage": "https://contenir.com.au",
     "support": {
-        "docs": "https://docs.contenir.com.au/contenir-view-helper/",
+        "docs": "https://github.com/contenir/contenir-view-helper/tree/main/docs",
         "issues": "https://contenir.com.au/issues",
         "source": "https://github.com/contenir/contenir-view-helper"
     },
