@@ -10,7 +10,7 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 - Infection mutation testing in CI, MSI 100%.
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-10-05
 
 The helpers, their aliases and their view-script calls are unchanged. The
 major version marks the move to PHP 8.3+, native types throughout and the
